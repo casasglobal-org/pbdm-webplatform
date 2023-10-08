@@ -1,0 +1,213 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>GRASS GIS manual: map.pbdm.colombia</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="grassdocs.css" type="text/css">
+</head>
+<body bgcolor="white">
+
+<img src="grass_logo.png" alt="GRASS logo"><img src="MED-GOLD_LOGO.png" alt="MED-GOLD logo">
+<hr align=center size=6 noshade>
+
+<h2>NAME</h2>
+<em><b>map.pbdm.colombia</b></em>  - Map and analyze the output of CASAS Global physiologically based demographic models (CASAS-PBDMs) for Colombia departments using GRASS GIS
+<h2>KEYWORDS</h2>
+MED-GOLD project, GRASS GIS, physiologically based demographic models (PBDM), olive, agroecosystem analysis, climate services
+<h2>SYNOPSIS</h2>
+<b>map.pbdm.colombia</b><br>
+<b>map.pbdm.colombia help</b><br>
+<b>map.pbdm.colombia</b> [-<b>wgelxaducrp</b>] <b>SaveDir</b>=<em>string</em> <b>longitude</b>=<em>integer</em> <b>latitude</b>=<em>integer</em> <b>year</b>=<em>integer</em> <b>parameter</b>=<em>integer</em> <b>interpolation</b>=<em>string</em> <b>numpoints</b>=<em>integer</em> <b>legend1</b>=<em>string</em>  [<b>colorRuleDivergent</b>=<em>string</em>]   [<b>colorRuleRegular</b>=<em>string</em>]   [<b>lowBarCol</b>=<em>float</em>]   [<b>upBarCol</b>=<em>float</em>]  <b>lowercut</b>=<em>float</em> <b>uppercut</b>=<em>float</em> <b>departments</b>=<em>string</em>[,<i>string</i>,...] <b>crop</b>=<em>string</em> <b>cropthreshold</b>=<em>float</em> <b>alt</b>=<em>float</em> <b>resolution</b>=<em>string</em>  [--<b>verbose</b>]  [--<b>quiet</b>] 
+
+<h3>Flags:</h3>
+<DL>
+<DT><b>-w</b></DT>
+<DD>Modify extent of legend color bar (using low and high input values)</DD>
+
+<DT><b>-g</b></DT>
+<DD>Black and white output instead of color</DD>
+
+<DT><b>-e</b></DT>
+<DD>Use histogram-equalized color rule</DD>
+
+<DT><b>-l</b></DT>
+<DD>Logarithmic scaling</DD>
+
+<DT><b>-x</b></DT>
+<DD>Use an overall (compound) range for all maps (absolute max and min)</DD>
+
+<DT><b>-a</b></DT>
+<DD>Use also same legend bar for all maps (i.e. bar will extend to overall max and min)</DD>
+
+<DT><b>-d</b></DT>
+<DD>Use divergent, zero-centered color pattern (requires positive max and negative min)</DD>
+
+<DT><b>-u</b></DT>
+<DD>Use cutting point to mask high values</DD>
+
+<DT><b>-c</b></DT>
+<DD>Do not interpolate stations above clipping altitude</DD>
+
+<DT><b>-r</b></DT>
+<DD>Write a report with raster statistics</DD>
+
+<DT><b>-p</b></DT>
+<DD>Produce bar chart plots summarizing raster statistics</DD>
+
+<DT><b>--verbose</b></DT>
+<DD>Verbose module output</DD>
+<DT><b>--quiet</b></DT>
+<DD>Quiet module output</DD>
+</DL>
+
+<h3>Parameters:</h3>
+<DL>
+<DT><b>SaveDir</b>=<em>string</em></DT>
+<DD>Name for directory where to store output maps</DD>
+
+<DT><b>longitude</b>=<em>integer</em></DT>
+<DD>Longitude (X) column number</DD>
+<DD>Default: <em>4</em></DD>
+
+<DT><b>latitude</b>=<em>integer</em></DT>
+<DD>Latitude (Y) column number</DD>
+<DD>Default: <em>5</em></DD>
+
+<DT><b>year</b>=<em>integer</em></DT>
+<DD>Year column number</DD>
+<DD>Default: <em>11</em></DD>
+
+<DT><b>parameter</b>=<em>integer</em></DT>
+<DD>Parameter to map</DD>
+
+<DT><b>interpolation</b>=<em>string</em></DT>
+<DD>Interpolation method</DD>
+<DD>Options: <em>idw,bspline</em></DD>
+<DD>Default: <em>bspline</em></DD>
+
+<DT><b>numpoints</b>=<em>integer</em></DT>
+<DD>Number of interpolation points (only used with interpolation method IDW)</DD>
+<DD>Default: <em>3</em></DD>
+
+<DT><b>legend1</b>=<em>string</em></DT>
+<DD>Text for legend - first line (file name of HTML summary)</DD>
+
+<DT><b>colorRuleDivergent</b>=<em>string</em></DT>
+<DD>Select or input a DIVERGENT color pattern (hyphen-separated) using standard GRASS colors (see r.colors manual page for color names) or R:G:B triplets</DD>
+<DD>Default: <em>32:96:255-32:159:255-32:191:255-0:207:255-42:255:255-85:255:255-127:255:255-170:255:255-255:255:84-255:240:0-255:191:0-255:168:0-255:138:0-255:112:0-255:77:0-255:0:0</em></DD>
+
+<DT><b>colorRuleRegular</b>=<em>string</em></DT>
+<DD>Select or input a REGULAR color pattern (hyphen-separated) using standard GRASS colors (see r.colors manual page for color names) or R:G:B triplets</DD>
+<DD>Default: <em>255:255:255-204:204:204-150:150:150-150:150:150-99:99:99-99:99:99-37:37:37-37:37:37</em></DD>
+
+<DT><b>lowBarCol</b>=<em>float</em></DT>
+<DD>Lower limit for legend color bar when -w option is enabled</DD>
+
+<DT><b>upBarCol</b>=<em>float</em></DT>
+<DD>Upper limit for legend color bar when -w option is enabled</DD>
+
+<DT><b>lowercut</b>=<em>float</em></DT>
+<DD>Cutting point to mask low values</DD>
+<DD>Default: <em>0</em></DD>
+
+<DT><b>uppercut</b>=<em>float</em></DT>
+<DD>Cutting point to mask high values (please, also check option -u Use cutting point to mask high values)</DD>
+<DD>Default: <em>0</em></DD>
+
+<DT><b>departments</b>=<em>string[,<i>string</i>,...]</em></DT>
+<DD>Specify multiple departments to map (comma separated). Use the word all to map them all. For departments, use codes defined as follows: CO-NAR=Nariño, CO-PUT=Putumayo, CO-CHO=Chocó, CO-GUA=Guainía, CO-VAU=Vaupés, CO-AMA=Amazonas, CO-LAG=La Guajira, CO-CES=Cesar, CO-NSA=Norte de Santander, CO-ARA=Arauca, CO-BOY=Boyacá, CO-VID=Vichada, CO-CAU=Cauca, CO-VAC=Valle del Cauca, CO-ANT=Antioquia, CO-COR=Córdoba, CO-SUC=Sucre, CO-BOL=Bolívar, CO-ATL=Atlántico, CO-MAG=Magdalena, CO-SAP=San Andrés y Providencia, CO-CAQ=Caquetá, CO-HUI=Huila, CO-GUV=Guaviare, CO-CAL=Caldas, CO-CAS=Casanare, CO-MET=Meta, CO-CUN=Bogota, CO-SAN=Santander, CO-TOL=Tolima, CO-QUI=Quindío, CO-CUN=Cundinamarca, CO-RIS=Risaralda</DD>
+<DD>Options: <em>all,CO-NAR,CO-PUT,CO-CHO,CO-GUA,CO-VAU,CO-AMA,CO-LAG,CO-CES,CO-NSA,CO-ARA,CO-BOY,CO-VID,CO-CAU,CO-VAC,CO-ANT,CO-COR,CO-SUC,CO-BOL,CO-ATL,CO-MAG,CO-SAP,CO-CAQ,CO-HUI,CO-GUV,CO-CAL,CO-CAS,CO-MET,CO-CUN,CO-SAN,CO-TOL,CO-QUI,CO-CUN,CO-RIS</em></DD>
+<DD>Default: <em>all</em></DD>
+
+<DT><b>crop</b>=<em>string</em></DT>
+<DD>Constrain output map to crop growing area. If coffee is used, it is possible to select a threshold for crop harvested area fraction above which mapping will occur.</DD>
+<DD>Options: <em>coffee,none</em></DD>
+<DD>Default: <em>coffee</em></DD>
+
+<DT><b>cropthreshold</b>=<em>float</em></DT>
+<DD>Threshold for crop harvested area fraction above which mapping will occur (output will not be mapped below the threshold)</DD>
+<DD>Default: <em>0.01</em></DD>
+
+<DT><b>alt</b>=<em>float</em></DT>
+<DD>Altitude (meters) above which to clip</DD>
+<DD>Default: <em>10000</em></DD>
+
+<DT><b>resolution</b>=<em>string</em></DT>
+<DD>Resolution of output figure (single=1, double=2, quad=4)</DD>
+<DD>Options: <em>1,2,4</em></DD>
+<DD>Default: <em>1</em></DD>
+
+</DL>
+
+
+<h2>DESCRIPTION</h2>
+
+The <em>map.pbdm.andalusia</em> and description follows.
+
+<h2>OPTIONS</h2>
+
+Unless the <b>-c</b> switch is used, something will or will not happen.
+
+<p>
+Here is another paragraph.
+
+<p>
+If the <b>-s</b> switch is used, something else happens.
+
+<p>
+Code may also be included and styled:
+
+<div class="code"><pre>IFS=,
+for opt in $GIS_OPT_INPUT ; do
+    ... "$opt"
+done
+</pre></div>
+
+<h2>NOTES</h2>
+
+Some particular recommendation follows:
+<pre>print "Hello world!";</pre>
+While this will only directly change the <i>Usage</i> section of the help
+screen, the option's environmental string may be easily parsed from within
+a script. For example, individual comma separated identities for an option 
+named "input" can be parsed with the following Bash shell code:
+
+<div class="code"><pre>IFS=,
+for opt in $GIS_OPT_INPUT ; do
+    ... "$opt"
+done
+</pre></div>
+
+<p>
+A "<tt>code related stuff shows like this</tt>".
+
+
+<h2>EXAMPLES</h2>
+
+Any examples? What follows is a centered image. We may want to show 
+a series of screenshots for the GUI.
+
+<p>
+<center>
+<img src="andalusia_gui.png" alt="Autogenerated GUI window">
+</center>
+
+
+
+<h2>SEE ALSO</h2>
+
+<em>
+  <a href="map.pbdm.colombia.html">map.pbdm.colombia</a>,
+</em>
+
+<h2>AUTHOR</h2>
+
+Luigi Ponti
+
+<p>
+<i>Last changed: 2019-09-29</i>
+<hr>
+<p>&copy; 2005-2019 <a href=" http://www.casasglobal.org">CASAS Global</a>
+
+</body>
+</html>

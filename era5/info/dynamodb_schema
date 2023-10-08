@@ -1,0 +1,58 @@
+{
+  "id": {
+    "S": "pbdm"
+  },
+  "datasets": {
+    "M": {
+      "agERA5": {
+        "M": {
+          "country": {
+            "L": [
+              {
+                "S": "ESP-AN"
+              },
+              {
+                "S": "COL-NA"
+              }
+            ]
+          },
+          "edate": {
+            "S": "2018"
+          },
+          "model": {
+            "S": "olive"
+          },
+          "output_time_interval": {
+            "S": "365"
+          },
+          "sdate": {
+            "S": "1979"
+          }
+        }
+      },
+      "agmerra": {
+        "M": {
+          "country": {
+            "L": [
+              {
+                "S": "ESP-POR"
+              }
+            ]
+          },
+          "edate": {
+            "S": "2010"
+          },
+          "model": {
+            "S": "olive"
+          },
+          "output_time_interval": {
+            "S": "365"
+          },
+          "sdate": {
+            "S": "1980"
+          }
+        }
+      }
+    }
+  }
+}

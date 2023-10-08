@@ -1,0 +1,51 @@
+stepFunctions:
+    stateMachines:
+        StepFunction:
+            name: "${self:provider.stage}-pbdm-sf"
+            role: 
+              Fn::GetAtt: [stepfunctionrole, Arn]
+            definition:
+                Comment: "MED-GOLD pbdm workflow"
+                StartAt: FargateWorker
+                States:
+                    FargateWorker:
+                        Type: Task
+                        Resource: "arn:aws:states:::ecs:runTask.sync"
+                        Parameters:
+                            LaunchType: "FARGATE"
+                            Cluster: {"Ref": "cluster"}
+                            TaskDefinition: {"Ref": "taskDefinition"}
+                            PlatformVersion: 1.4.0
+                            Overrides:  
+                                ContainerOverrides:   
+                                    -   Name: "${self:provider.stage}-pbdm-wf-container"
+                                        Environment: 
+                                            -   Name: BUCKET_NAME
+                                                Value: "${self:custom.BUCKET_NAME}"
+                                            # -   Name: DYNAMO_TABLE
+                                            #     Value: "${self:custom.dynamodbtable}"
+                                            -   Name: requestId
+                                                Value.$: "$.requestId"
+                                            -   Name: end_date
+                                                Value.$: "$.end_date"
+                                            -   Name: start_date
+                                                Value.$: "$.start_date"
+                                            -   Name: country
+                                                Value.$: "$.country"
+                                            -   Name: model
+                                                Value.$: "$.model"
+                                            -   Name: dataset
+                                                Value.$: "$.dataset"
+                                            -   Name: output_time_interval
+                                                Value.$: "$.output_time_interval"
+                                            -   Name: wf
+                                                Value.$: "$.wf"
+                            NetworkConfiguration:
+                                AwsvpcConfiguration:
+                                    Subnets:
+                                        - {"Ref": "Subnet"}
+                                    SecurityGroups:
+                                        - {"Ref": "SecurityGroup"}
+                                        - {"Ref": "SecurityGroupEFS"} 
+                                    AssignPublicIp: "ENABLED"
+                        End: true

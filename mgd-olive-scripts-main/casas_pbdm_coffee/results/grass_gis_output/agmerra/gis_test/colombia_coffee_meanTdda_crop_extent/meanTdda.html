@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>meanTdda - Visual Summary</title>
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1" >
+</head>
+<body>
+<h1>Report for "meanTdda"</h1>
+<h2>Output maps</h2>
+<a href="meanTdda_coffee_03oct19_avg.txt"><img src="meanTdda_coffee_03oct19_avg.png" width="32%"></a>
+<a href="WeatherStations.txt"><img src="WeatherStations.png" width="32%"></a>
+<p><i>Please, click on images to see stat report.</i></p>
+<p><i>You may also see raster statistics as barcharts (<a href="meanTdda-PLOTa.html" target="_blank">zoned</a> and <a href="meanTdda-PLOTb.html" target="_blank">overall</a>) and as cell frequency <a href="meanTdda-PLOTc.html" target="_blank">histogram</a>.</i></p>
+<h2>Mapping parameters</h2>
+<ul>
+<li>Parameter mapped: 8
+<li>Lower cutting point: 0
+<li>Upper cutting point: none
+<li>Region clip: 
+<li>Altitude clip: 10000 m
+<li>Stations above altitude clip were used to interpolate: yes
+</ul>
+<h2>Input file log</h2>
+This log reports names of input files used for analysis:
+<br>
+<ul>
+<li>meanTdda_coffee_03oct19_avg
+</li>
+</ul>
+GIS script syntax used:
+<br>
+    
+<br>
+	map.pbdm.colombia 
+<br>
+	w=0 g=0 l=0 x=0
+<br>
+    a=0 d=0 u=0 c=0
+<br>
+	r=1 p=1
+<br>
+	SaveDir=/c/cygwin/home/andy/outfiles/colombia_coffee_meanTdda_crop_extent longitude=4 latitude=5 year=11 
+<br>
+	parameter=8 interpolation=bspline numpoints=3
+<br>
+	lowercut=0 uppercut=0 legend1=meanTdda departments=all
+<br>
+	alt=10000 resolution=1 lowBarCol= upBarCol= 
+<br>
+	crop=coffee crop_threshold=0.01
+<br>
+(Wed, 09 Oct 2019 19:54:40 +0200)
+<br></body></html>

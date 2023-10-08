@@ -1,0 +1,38 @@
+app: ict-platform-backend-app
+service: ict-platform-pbdm-wf
+
+plugins:
+  - serverless-step-functions
+  - serverless-pseudo-parameters
+
+provider:
+  name: aws
+  runtime: python3.7
+  region: eu-west-1
+  stage: ${opt:stage, 'dev'}
+  stackTags:
+    Name: ict-platform-backend
+    Environment: dev
+    Role: pbdm-wf
+
+custom:
+  BUCKET_NAME: "${self:provider.stage}-pbdm-workflow"
+  task_definition: "${self:provider.stage}-pbdm-task-definition"
+  dynamodbtable: ${self:provider.stage}-pbdm-wf
+  
+
+# STEP-FUNCTION
+stepFunctions: ${file(resources/stepFunctions.yml):stepFunctions}
+
+resources:
+  # IAM-ROLE
+  - ${file(resources/iam-roles.yml)}
+
+  # ECS
+  - ${file(resources/ecs.yml)}
+
+  # VPC
+  - ${file(resources/vpc.yml)}
+
+  # s3
+  - ${file(resources/s3.yml)}

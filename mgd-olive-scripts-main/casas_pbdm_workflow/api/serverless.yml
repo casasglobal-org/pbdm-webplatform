@@ -1,0 +1,36 @@
+app: ict-platform-backend-app
+service: ict-platform-pbdm-api
+
+plugins:
+  - serverless-pseudo-parameters
+  - serverless-reqvalidator-plugin
+
+
+provider:
+  name: aws
+  runtime: python3.7
+  region: ${opt:region, 'eu-west-1'}
+  stage: ${opt:stage, 'dev'}
+  endpointType: REGIONAL
+  stackTags:
+    Name: mgd-ict-platform-backend
+    Environment: ${self:provider.stage}
+    Role: pbdm-wf
+
+custom:
+  env:  ${self:provider.stage}
+  BUCKET_NAME: data.med-gold.eu
+  workflow_table: ${self:provider.stage}-workflow
+  clusterName: ${self:provider.stage}-pbdm-wf-cluster
+  #fargateLambdaName: ${self:provider.stage}--pbdm-wf-worker-fargate
+  StepFunctionArn: "arn:aws:states:${self:provider.region}:#{AWS::AccountId}:stateMachine:${self:provider.stage}-pbdm-sf"
+  StepFunctionExecutionArn: "arn:aws:states:${self:provider.region}:#{AWS::AccountId}:execution:${self:provider.stage}-pbdm-sf:"
+  cognito_arn: "arn:aws:cognito-idp:eu-west-1:284176251738:userpool/eu-west-1_owfEtSFcp"
+
+# LAMBDAS
+functions: ${file(resources/functions.yml):functions}
+
+resources:
+  # IAM-ROLE
+  - ${file(resources/iam-roles.yml)}
+  - ${file(validator.yml):resources}

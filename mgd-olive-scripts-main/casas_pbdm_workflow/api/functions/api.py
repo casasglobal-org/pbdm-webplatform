@@ -1,0 +1,217 @@
+import boto3
+import os
+import base64
+import botocore
+import datetime
+import zipfile
+import json
+import time
+from botocore.exceptions import ClientError
+from boto3.dynamodb.conditions import Key, Attr
+ 
+
+##BOTO##
+s3 = boto3.resource("s3")
+s3Client = boto3.client('s3')
+dynamodb = boto3.resource('dynamodb')
+
+sf = boto3.client('stepfunctions')
+table_wfs = dynamodb.Table(os.environ['workflow_table'])
+
+#ECS##
+ecs = boto3.client('ecs')
+cluster_name = os.environ['cluster_name']
+
+BUCKET_NAME = os.environ['BUCKET_NAME']
+BUCKET_PATH = '{}/wf/{}/'
+
+##_ECMWF WF_##
+def index(event, context):
+    # Check params
+    wf = event['pathParameters']['wf']
+    dataset = event['pathParameters']['id']
+    query_params = event['queryStringParameters']
+    requestId = event['requestContext']['requestId']
+    try:
+        response = table_wfs.scan(
+            FilterExpression = Attr('id').eq(wf)&Attr('datasets').contains(dataset)
+        )
+        items = response['Items']
+        if len(items) is 0:
+            raise Exception('Workflow not found!')
+
+        sdate = query_params.get('sdate')
+        edate = query_params.get('edate')
+        country = query_params.get('country')
+        model = query_params.get('model')
+        out_time_int = query_params.get('output_time_interval')
+        print(sdate)
+        values = items[0]
+        print(values)
+        err_message = pbdm_var_check(sdate, edate, country, dataset, model, out_time_int, values)
+
+        
+        if 'no_error' in err_message:
+            returnVal = {
+                'requestId': requestId,
+                'country':  country,
+                'start_date': sdate,
+                'end_date': edate,
+                'model': model,
+                'dataset': dataset,
+                'output_time_interval': out_time_int,
+                'wf': wf
+            }
+
+            #response = check_if_task_already_exists(requestId, sdate, edate, country, dataset, model, out_time_int)
+            response = {
+                'state': 'not found'
+            }
+            if response['state'] == 'error':
+                return {
+                    'statusCode': 500,
+                    'body': json.dumps({
+                        "error": response['error']
+                        }),
+                    'headers': {
+                        'Access-Control-Allow-Origin': '*'
+                    }
+                }
+
+            #if response['state'] == 'not found':
+            sf_response=""
+            try:
+                # Trigger step function
+                sf_response = sf.start_execution(
+                    stateMachineArn=os.environ['sf_arn'],
+                    name=requestId,
+                    input= json.dumps(returnVal)
+                )
+            except ClientError as e:
+                return {
+                    'statusCode': 500,
+                    'body': json.dumps({
+                        "StepFunctions_Response": sf_response,
+                        "error": e
+                        }),
+                    'headers': {
+                        'Access-Control-Allow-Origin': '*'
+                    }
+                }
+            # else:
+            #     requestId = response['requestId']
+            
+            
+        else:
+            return {
+                'statusCode': 400,
+                'body': json.dumps({'Error': err_message}),
+                'headers': {
+                    'Access-Control-Allow-Origin': '*'
+                }
+            }
+    except ClientError as e:
+        print(e)
+        return {
+            'statusCode': 422,
+            'body': json.dumps({"Message":"Invalid request"}),
+            'headers': {
+                'Access-Control-Allow-Origin': '*'
+            }
+        }
+
+    return {
+        'statusCode': 200,
+        'body': json.dumps({'RequestId': requestId}),
+        'headers': {
+            'Access-Control-Allow-Origin': '*'
+        }
+    }
+
+
+
+def check_if_task_already_exists(requestId, sdate, edate, country, dataset, model, out_time_int):
+    # CHECK ON S3 FILE.TXT
+    json_file_name = '{}json/{}_{}_{}_{}_{}.json'.format(BUCKET_PATH, dataset, model, sdate.replace('/', '-'), edate.replace('/', '-'), country)
+    zip_file_name = '{}{}_{}_{}_{}_{}.zip'.format(BUCKET_PATH, dataset, model, sdate.replace('/', '-'), edate.replace('/', '-'), country)
+    try:
+        json_file = json.loads(s3Client.get_object(
+            Bucket=BUCKET_NAME,
+            ResponseContentType='application/json',
+            Key=json_file_name
+            )['Body'].read().decode('utf-8'))
+        print("Finded json: " + BUCKET_NAME + "/" + json_file_name)
+
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'NoSuchKey':
+            # IS NOT HERE :(
+            #RETURN PARAM REQUESTID AND STATE "NOT FOUND"
+            return {
+                'state': "not found"
+            }
+        else:
+            return {
+                'state': 'error',
+                'error': e
+            }
+    else:
+    # IS HERE
+        print("Json state:" + json_file['state'])
+        if json_file['state'] == 'done':
+            try:
+                s3Client.get_object(Bucket=BUCKET_NAME, Key=zip_file_name)
+            except ClientError as e:
+                if e.response['Error']['Code'] == 'NoSuchKey':
+                    #TODO
+                    #Delete json file
+                    return {
+                        'state': "not found"
+                    }
+                else:
+                    return {
+                        'state': 'error',
+                        'error': e
+                    }
+        else:
+            if json_file['state'] == 'failed':
+                return {
+                        'state': "not found"
+                    }
+            else:
+                return {
+                    'state': json_file['state'],
+                    'requestId': json_file['requestId']
+            }
+        return {
+            'state': json_file['state'],
+            'requestId': requestId
+        }
+
+
+def pbdm_var_check(sdate, edate, country, dataset, model, out_time_int, values):
+    sdate = sdate.split('/')
+    edate = edate.split('/')
+
+    if int(sdate[0]) < int(values[dataset]['sdate']):
+        return 'sdate value not valid'
+
+    if int(edate[0]) > int(values[dataset]['edate']):
+        return 'edate value not valid'
+
+    try:
+        datetime.date(int(sdate[0]), int(sdate[1]), int(sdate[2]))
+        datetime.date(int(edate[0]), int(edate[1]), int(edate[2]))
+    except IndexError:
+        return 'Invalid date! Correct date format is YYYY/MM/DD'
+
+
+    if model not in values[dataset]['model']:
+        return 'model value not valid'
+
+    if country not in values[dataset]['country']:
+        return 'country value not valid!'
+
+    if out_time_int != values[dataset]['output_time_interval']:
+        return 'output_time_interval value not valid!'
+
+    return 'no_error'
