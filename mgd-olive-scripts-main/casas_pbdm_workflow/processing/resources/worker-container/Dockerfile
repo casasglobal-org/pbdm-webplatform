@@ -52,8 +52,6 @@ COPY run.sh /
 ENTRYPOINT ["/bin/sh"]
 CMD ["run.sh"]
 
-ENV AWS_ACCESS_KEY_ID=AKIAZUTGR2QLQJCMOH7J
-ENV AWS_SECRET_ACCESS_KEY=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
 ENV BUCKET_NAME dev-pbdm-workflow
 ENV TASK_CLUSTER dev-ict-platform-pbdm-wf-cluster
 ENV TASK_CONTAINER  dev-ict-platform-pbdm-wf-container
