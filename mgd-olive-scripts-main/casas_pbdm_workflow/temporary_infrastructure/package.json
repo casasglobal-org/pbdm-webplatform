@@ -1,0 +1,10 @@
+{
+  "name": "mgd-ict-platform-pbdm-wf",
+  "description": "",
+  "version": "0.1.0",
+  "devDependencies": {
+    "serverless-pseudo-parameters": "^2.6.1",
+    "serverless-reqvalidator-plugin": "^1.0.3",
+    "serverless-step-functions": "^2.19.0"
+  }
+}

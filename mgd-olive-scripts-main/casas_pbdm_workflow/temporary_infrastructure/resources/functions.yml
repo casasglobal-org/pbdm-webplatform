@@ -1,0 +1,59 @@
+functions:
+    
+    api:
+        handler: functions/api.index
+        name: ${self:provider.stage}-pbdm-lambda-ti-wf
+        role: apiRole
+        events:
+        - http:
+            path: /dataset/{id}/workflow/{wf}
+            method: get
+            request:
+                parameters: 
+                    paths:
+                        id: true
+                        wf: true
+                    querystrings:
+                        country: true
+                        sdate: true
+                        edate: true
+                        model: true
+                        output_time_interval: true
+            cors: true
+            #reqValidatorName: validator
+            # authorizer:
+            #     type: COGNITO_USER_POOLS
+            #     arn: ${self:custom.cognito_arn}
+        environment:
+            sf_arn: "${file(serverless.yml):custom.StepFunctionArn}"
+            #requests_table: "${file(resources/dynamodb.yml):Resources.requestsAPI.Properties.TableName}"
+            cluster_name: "${self:custom.clusterName}"
+            BUCKET_NAME: "${self:custom.BUCKET_NAME}"
+            workflow_table: "${file(serverless.yml):custom.workflow_table}"
+
+    
+    request:
+        handler: functions/request-api.state
+        name: ${self:provider.stage}-pbdm-lambda-ti-state
+        role: staterequestrole
+        events:
+        - http: 
+            path: /{wf}/request
+            method: get
+            request:
+            parameters:
+                paths:
+                    wf: true
+                querystrings:
+                    id: true
+            cors: true
+            #reqValidatorName: validator
+            # authorizer:
+            #     type: COGNITO_USER_POOLS
+            #     arn: ${self:custom.cognito_arn}
+        environment:
+            #requests_table: "${file(resources/dynamodb.yml):Resources.requestsAPI.Properties.TableName}"
+            BUCKET_NAME: "${file(serverless.yml):custom.BUCKET_NAME}"
+            cluster_name: "${file(serverless.yml):custom.clusterName}"
+            partial_url: "https://s3-eu-west-1.amazonaws.com"
+            sf_partialArn: "${file(serverless.yml):custom.StepFunctionExecutionArn}"
