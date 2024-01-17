@@ -158,14 +158,14 @@ List of points for different locations:
 
 In order to launch an execution, you have to send this api call:
 
-- https://{{api-endpoint}}.execute-api.{{region}}.amazonaws.com/dev/dataset/{{dataset}}/workflow/{{wf}}?country={{country}}&sdate={{sdate}}&model={{model}}&output_time_interval={{output_time_interval}}&edate={{edate}}
+- https://{{api-endpoint}}.execute-api.{{region}}.amazonaws.com/dev/dataset/{{dataset}}/workflow/{{wf}}?country={{country}}&sdate={{sdate}}&model={{model}}&output_time_interval={{output_time_interval}}&edate={{edate}}&resolution{{resolution}}
 
 where: 
 - dataset can take the values: agmerra or AgERA5
 - wf can take the value: pbdm
 - country can take the values:
     - ESP-POR if dataset value is equal to agmerra
-    - ESP-AN or ITA-PUG
+    - ESP-AN, ITA-PUG-250m, ITA-PUG-1km
 - sdate can take the values:
     - from 1979 to 2022 for AgERA5
     - from 1980 to 2010 for agmerra 
@@ -176,6 +176,9 @@ where:
     - the format is YYYY/MM/DD
 - model can take the value: olive
 - output_time_interval can take the value: 365
+- resolution can take values:
+    - standard-250m, zeuli-250m, uliveti-250m if country is ITA-PUG-250m
+    - standard-1km if country is ITA-PUG-1km
 
 In order to check the worker state, you have to send this api call:
 
