@@ -6,5 +6,9 @@
     "serverless-pseudo-parameters": "^2.6.1",
     "serverless-reqvalidator-plugin": "^1.0.3",
     "serverless-step-functions": "^2.19.0"
+  },
+  "dependencies": {
+    "iterate": "^0.1.1",
+    "npm": "^10.3.0"
   }
 }

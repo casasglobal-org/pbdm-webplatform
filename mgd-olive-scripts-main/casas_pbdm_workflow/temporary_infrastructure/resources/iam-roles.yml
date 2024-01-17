@@ -73,12 +73,12 @@ Resources:
                                 Action:
                                     - "dynamodb:Scan"
                                 Resource:
-                                    - "arn:aws:dynamodb:${self:provider.region}:#{AWS::AccountId}:table/dev-workflow"
+                                    - "arn:aws:dynamodb:${self:provider.region}:#{AWS::AccountId}:table/dev-pbdm-workflow"
                             -   Effect: Allow
                                 Action:
                                     - "sqs:*"
                                 Resource:
-                                    - "arn:aws:sqs:${self:provider.region}:#{AWS::AccountId}:dev-mgd-ict-platform-workflow"
+                                    - "arn:aws:sqs:${self:provider.region}:#{AWS::AccountId}:dev-pbdm-ti-workflow"
 
     staterequestrole:
         Type: AWS::IAM::Role
@@ -152,5 +152,5 @@ Resources:
                                     - "sqs:DeleteMessage"
                                     - "sqs:ReceiveMessage"
                                 Resource:  
-                                    - "arn:aws:sqs:${self:provider.region}:#{AWS::AccountId}:dev-mgd-ict-platform-workflow"
+                                    - "arn:aws:sqs:${self:provider.region}:#{AWS::AccountId}:dev-pbdm-ti-workflow"
                             

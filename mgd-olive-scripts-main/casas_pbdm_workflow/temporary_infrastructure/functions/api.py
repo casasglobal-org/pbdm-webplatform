@@ -15,7 +15,7 @@ s3 = boto3.resource("s3")
 s3Client = boto3.client('s3')
 dynamodb = boto3.resource('dynamodb')
 sqs = boto3.client('sqs')
-queue_url = 'https://sqs.eu-west-1.amazonaws.com/722737779887/dev-mgd-ict-platform-workflow'
+queue_url = 'https://sqs.eu-west-1.amazonaws.com/662713783319/dev-pbdm-ti-workflow'
 
 sf = boto3.client('stepfunctions')
 table_wfs = dynamodb.Table(os.environ['workflow_table'])
@@ -47,10 +47,11 @@ def index(event, context):
         country = query_params.get('country')
         model = query_params.get('model')
         out_time_int = query_params.get('output_time_interval')
+        resolution = query_params.get('resolution')
         print(sdate)
         values = items[0]
         print(values)
-        err_message = pbdm_var_check(sdate, edate, country, dataset, model, out_time_int, values)
+        err_message = pbdm_var_check(sdate, edate, country, dataset, model, out_time_int, values, resolution)
 
         
         if 'no_error' in err_message:
@@ -62,7 +63,8 @@ def index(event, context):
                 'model': model,
                 'dataset': dataset,
                 'output_time_interval': out_time_int,
-                'wf': wf
+                'wf': wf,
+                'resolution': resolution
             }
 
             response = check_if_task_already_exists(requestId, sdate, edate, country, dataset, model, out_time_int, wf)
@@ -93,6 +95,7 @@ def index(event, context):
                 sf_response = sqs.send_message(QueueUrl=queue_url,MessageBody=json.dumps(returnVal))
 
             except ClientError as e:
+                print(e)
                 return {
                     'statusCode': 500,
                     'body': json.dumps({
@@ -196,14 +199,14 @@ def check_if_task_already_exists(requestId, sdate, edate, country, dataset, mode
         }
 
 
-def pbdm_var_check(sdate, edate, country, dataset, model, out_time_int, values):
+def pbdm_var_check(sdate, edate, country, dataset, model, out_time_int, values, resolution):
     sdate = sdate.split('/')
     edate = edate.split('/')
 
-    if int(sdate[0]) < int(values[dataset]['sdate']):
+    if int(sdate[0]) < int(values[dataset][country]['sdate']):
         return 'sdate value not valid'
 
-    if int(edate[0]) > int(values[dataset]['edate']):
+    if int(edate[0]) > int(values[dataset][country]['edate']):
         return 'edate value not valid'
 
     try:
@@ -213,13 +216,17 @@ def pbdm_var_check(sdate, edate, country, dataset, model, out_time_int, values):
         return 'Invalid date! Correct date format is YYYY/MM/DD'
 
 
-    if model not in values[dataset]['model']:
+    if model not in values[dataset][country]['model']:
         return 'model value not valid'
 
     if country not in values[dataset]['country']:
         return 'country value not valid!'
 
-    if out_time_int != values[dataset]['output_time_interval']:
+    if out_time_int != values[dataset][country]['output_time_interval']:
         return 'output_time_interval value not valid!'
+    
+    if len(values[dataset][country]['resolution']) != 0:
+        if resolution not in values[dataset][country]['resolution']:
+            return 'resolution value not valid!'
 
     return 'no_error'

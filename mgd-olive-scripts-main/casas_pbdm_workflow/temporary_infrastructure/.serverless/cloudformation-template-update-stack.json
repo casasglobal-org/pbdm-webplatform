@@ -90,7 +90,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/dev-pbdm-backend-api/dev/1698424086864-2023-10-27T16:28:06.864Z/dev-pbdm-backend-api.zip"
+          "S3Key": "serverless/dev-pbdm-backend-api/dev/1705255675656-2024-01-14T18:07:55.656Z/dev-pbdm-backend-api.zip"
         },
         "Handler": "functions/api.index",
         "Runtime": "python3.9",
@@ -126,7 +126,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/dev-pbdm-backend-api/dev/1698424086864-2023-10-27T16:28:06.864Z/dev-pbdm-backend-api.zip"
+          "S3Key": "serverless/dev-pbdm-backend-api/dev/1705255675656-2024-01-14T18:07:55.656Z/dev-pbdm-backend-api.zip"
         },
         "Handler": "functions/request-api.state",
         "Runtime": "python3.9",
@@ -155,24 +155,24 @@
         "staterequestrole"
       ]
     },
-    "ApiLambdaVersionyprZ2jsYcrVyfikB5wNlsMoRdw78yrrFeCauIEoAiNY": {
-      "Type": "AWS::Lambda::Version",
-      "DeletionPolicy": "Retain",
-      "Properties": {
-        "FunctionName": {
-          "Ref": "ApiLambdaFunction"
-        },
-        "CodeSha256": "KhRQctnCa0UIxob/B7DQgjoWMTtBGCYdiMhUkbH4CzQ="
-      }
-    },
-    "RequestLambdaVersionaKyOSGZDq4ufFviW7NbAdEdwRMF9bmLow0tzoaQUkA": {
+    "RequestLambdaVersionAHOkb7KcLLsyETmQLQ9FVMF1wSCYn3zFBmUy4yBo": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "RequestLambdaFunction"
         },
-        "CodeSha256": "KhRQctnCa0UIxob/B7DQgjoWMTtBGCYdiMhUkbH4CzQ="
+        "CodeSha256": "hvGgeLfc4A5ecD202wVGzdxxjpKKnAi9K5BS6OR7Ong="
+      }
+    },
+    "ApiLambdaVersiong9nkQmP8ADnfsCHdbbxcRjTuJe316fzHhc1tTkLc": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ApiLambdaFunction"
+        },
+        "CodeSha256": "hvGgeLfc4A5ecD202wVGzdxxjpKKnAi9K5BS6OR7Ong="
       }
     },
     "ApiGatewayRestApi": {
@@ -365,6 +365,7 @@
           "method.request.querystring.edate": true,
           "method.request.querystring.model": true,
           "method.request.querystring.output_time_interval": true,
+          "method.request.querystring.resolution": true,
           "method.request.path.id": true,
           "method.request.path.wf": true
         },
@@ -469,7 +470,7 @@
         "Name": "dev-pbdm-backend-api-dev | Validate request body and querystring parameters"
       }
     },
-    "ApiGatewayDeployment1698424083088": {
+    "ApiGatewayDeployment1705255671841": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -661,7 +662,7 @@
                   ],
                   "Resource": [
                     {
-                      "Fn::Sub": "arn:aws:dynamodb:eu-west-1:${AWS::AccountId}:table/dev-workflow"
+                      "Fn::Sub": "arn:aws:dynamodb:eu-west-1:${AWS::AccountId}:table/dev-pbdm-workflow"
                     }
                   ]
                 },
@@ -672,7 +673,7 @@
                   ],
                   "Resource": [
                     {
-                      "Fn::Sub": "arn:aws:sqs:eu-west-1:${AWS::AccountId}:dev-mgd-ict-platform-workflow"
+                      "Fn::Sub": "arn:aws:sqs:eu-west-1:${AWS::AccountId}:dev-pbdm-ti-workflow"
                     }
                   ]
                 }
@@ -793,7 +794,7 @@
                   ],
                   "Resource": [
                     {
-                      "Fn::Sub": "arn:aws:sqs:eu-west-1:${AWS::AccountId}:dev-mgd-ict-platform-workflow"
+                      "Fn::Sub": "arn:aws:sqs:eu-west-1:${AWS::AccountId}:dev-pbdm-ti-workflow"
                     }
                   ]
                 }
@@ -935,22 +936,22 @@
         "Name": "sls-dev-pbdm-backend-api-dev-ServerlessDeploymentBucketName"
       }
     },
-    "ApiLambdaFunctionQualifiedArn": {
-      "Description": "Current Lambda function version",
-      "Value": {
-        "Ref": "ApiLambdaVersionyprZ2jsYcrVyfikB5wNlsMoRdw78yrrFeCauIEoAiNY"
-      },
-      "Export": {
-        "Name": "sls-dev-pbdm-backend-api-dev-ApiLambdaFunctionQualifiedArn"
-      }
-    },
     "RequestLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "RequestLambdaVersionaKyOSGZDq4ufFviW7NbAdEdwRMF9bmLow0tzoaQUkA"
+        "Ref": "RequestLambdaVersionAHOkb7KcLLsyETmQLQ9FVMF1wSCYn3zFBmUy4yBo"
       },
       "Export": {
         "Name": "sls-dev-pbdm-backend-api-dev-RequestLambdaFunctionQualifiedArn"
+      }
+    },
+    "ApiLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "ApiLambdaVersiong9nkQmP8ADnfsCHdbbxcRjTuJe316fzHhc1tTkLc"
+      },
+      "Export": {
+        "Name": "sls-dev-pbdm-backend-api-dev-ApiLambdaFunctionQualifiedArn"
       }
     },
     "ServiceEndpoint": {

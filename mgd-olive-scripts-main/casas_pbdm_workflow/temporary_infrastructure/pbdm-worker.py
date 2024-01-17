@@ -10,24 +10,25 @@ import time
 import botocore
 from botocore.exceptions import ClientError
 import shutil  
-sqs = boto3.client('sqs')
-queue_url = 'https://sqs.eu-west-1.amazonaws.com/722737779887/dev-mgd-ict-platform-workflow'
+sqs = boto3.client('sqs',region_name='eu-west-1')
+queue_url = 'https://sqs.eu-west-1.amazonaws.com/662713783319/dev-pbdm-ti-workflow'
 
-os.environ['AWS_DEFAULT_REGION'] = 'eu-west-1'
+os.system("set AWS_DEFAULT_REGION=eu-west-1")
 
 s3 = boto3.resource(
-  "s3"
+  "s3", 
+  region_name='eu-west-1'
   )
 s3Client = boto3.client(
-  's3'
+  's3', region_name='eu-west-1'
   )
-BUCKET_NAME = 'data.medgold.eu'
-SECOND_BUCKET_NAME = 'data-medgold-eu'
+BUCKET_NAME = 'dev-pbdm-workflow'
+SECOND_BUCKET_NAME = 'data.pbdm.it'
 bucket = s3.Bucket(BUCKET_NAME)
 bucket2 = s3.Bucket(SECOND_BUCKET_NAME)
 dynamodb = boto3.resource(
   'dynamodb',
-  region_name=os.environ['AWS_DEFAULT_REGION']
+  region_name='eu-west-1'
   )
 PATH = "\\txtfiles\\"
 NEW_PATH = "\\output\\"
@@ -41,10 +42,26 @@ coords_file = 'punti.dat'
 header_lenght = 3
 
 date = {
-  "agmerra": 1980,
-  "AgERA5": 1979
+  "agmerra": {
+    "ESP-AN": 1980},
+  "AgERA5": {
+      "ESP-AN": 1979,
+      "ITA-PUG": 2003
+  }
 }
 
+
+def remove_files(cwd, DATASET_PATH, NEW_PATH):
+  
+  #remove files
+  rm_files = [f for f in os.listdir(cwd+DATASET_PATH+NEW_PATH)]
+  for f in rm_files:
+    os.remove(cwd+DATASET_PATH+NEW_PATH+f) 
+  
+  #remove files
+  rm_files2 = [f for f in os.listdir(cwd+DATASET_PATH+DAILY_PATH)]
+  for f in rm_files2:
+    os.remove(cwd+DATASET_PATH+DAILY_PATH+f)
 
 def start_threads(threads):
     for x in threads:
@@ -54,16 +71,27 @@ def start_threads(threads):
         x.join()
 
 def polling(message):
+  global coords_file
+  global PATH
+  global DATASET_PATH
   requestId = message['requestId']
   end_date = message['end_date']
   start_date = message['start_date']
-  country = message['country']
+  country = '-'.join(message['country'].split('-')[0:2])
   model = message['model']
   dataset = message['dataset']
   wf = message['wf']
+  resolution = message['resolution']
   DATASET_PATH = "\{}\{}".format(dataset, country)
   otinterval = message['output_time_interval']
   cwd = os.getcwd()
+  if resolution != "": 
+    coords_file = coords_file.replace(".dat", f"_{resolution}.dat")
+    if '250m' in resolution:
+      PATH = PATH.replace('txtfiles\\','txtfiles_250m\\')
+    else: 
+      PATH = PATH.replace('txtfiles\\','txtfiles_1km\\')
+
   zip_file_name = '{}_{}_{}_{}_{}.zip'.format(dataset, model, start_date.replace('/', '-'), end_date.replace('/', '-'), country)
   #json_file_name = '{}json/{}_{}_{}_{}_{}.json'.format(SECOND_BUCKET_PATH.format(dataset), dataset, model, start_date.replace('/', '-'), end_date.replace('/', '-'), country)
   # es agmerra/wf/pbdm/json/
@@ -97,13 +125,20 @@ def polling(message):
           # coords file (punti.dat) dovrà trovarsi dentro /dataset/country/
           # reading coords file, value  row   col   lon   lat   country
           print(cwd+DATASET_PATH+"\\"+coords_file)
-          with open(cwd+DATASET_PATH+"/"+coords_file, 'r') as f:
+          with open(cwd+DATASET_PATH+"\\"+coords_file, 'r') as f:
             for line in f.readlines():
               values = line.replace('\n', '').split('\t')
               name = '{}_{}_{}_{}.txt'.format(dataset, values[1], values[2], values[5])
               # creating file agmerra for selected point (lat, lon) and saving it on txtfiles folder
               #values[5].split('-')[0]
-              file_name = '{}_{}_{}_{}.txt'.format(cwd+DATASET_PATH+PATH+dataset, values[1], values[2],values[5].split('-')[0])
+              if resolution != "":
+                file_name = '{}{}.txt'.format(cwd+DATASET_PATH+PATH, values[2])
+                newfile_name = '{}{}.txt'.format(cwd+DATASET_PATH+NEW_PATH, values[2])
+
+              else:
+                file_name = '{}_{}_{}_{}.txt'.format(cwd+DATASET_PATH+PATH+dataset, values[1], values[2],values[5].split('-')[0])
+                newfile_name = '{}_{}_{}_{}.txt'.format(cwd+DATASET_PATH+NEW_PATH+dataset, values[1], values[2], values[5])
+              
               # if file doesn't exists in local, download it from s3
               if not os.path.isfile(file_name):
                 try:
@@ -112,21 +147,23 @@ def polling(message):
                 except botocore.exceptions.ClientError as e:
                   if e.response['Error']['Code'] == "404":
                     pass
-              # newfile_name is file cut, that contain variables for each day between start_year and end_year, saved on output folder
-              newfile_name = '{}_{}_{}_{}.txt'.format(cwd+DATASET_PATH+NEW_PATH+dataset, values[1], values[2], values[5])
               #i = 0
               # opening file AGmerra in txtfiles folder
               with open(file_name, 'r') as file:
                 # creating newfile_name on output folder
                 with open(newfile_name, 'w',newline='\r' ) as newf:
                   lines = file.readlines()
+                  print(len(lines))
                   newf.write(lines[0])
                   newf.write(lines[1])
                   newf.write(lines[2])
-                  days = start_date-datetime.date(date[dataset],1,1)
+                  days = start_date-datetime.date(date[dataset][country],1,1)
                   diff = end_date-start_date
                   print(newfile_name)
+                  print(days.days+3)
+                  print(days.days+diff.days+4)
                   for n in range(days.days+3, days.days+diff.days+4):
+                    print(n)
                     newf.write(lines[n])
         except Exception as e:
           data = {
@@ -157,24 +194,19 @@ def polling(message):
           cmdCommand ='{} {} {} {} {} {}'.format('.\{}_no-w.exe'.format(model), '.\{}.ini'.format(model), ' {} {} {} '.format(str(start_date.month), str(start_date.day), str(start_date.year)),' {} {} {} '.format(str(end_date.month), str(end_date.day), str(end_date.year)),otinterval, cwd+DATASET_PATH+NEW_PATH+file)     #specify your cmd command
          
           print(cmdCommand)
-          #res = os.system(cmdCommand)
-          #print(res)
           process = subprocess.Popen(cmdCommand.split(), stdout=subprocess.PIPE)
-          #commands.append(process)
           try:
             process.wait()
           except subprocess.TimeoutExpired:
             process.kill()
-          #process.wait()
-          # process2 = subprocess.Popen(cmdCommand.split(), stdout=subprocess.PIPE)
-          # process2.wait()
           i = i + 1
           fd = os.rename('OliveDaily.txt', 'OliveDaily{}.txt'.format(i))
           #shutil.move('OliveDaily{}.txt'.format(i), os.path.join(cwd, 'OliveDaily{}.txt'.format(i)))
           s = s + 'OliveDaily{}.txt'.format(i)
-          #os.close(fd)
+          #os.system('del OliveDaily.txt')
+          
         
-        os.system('cat {} > OliveDaily.txt'.format(s))
+        os.system('type {} > OliveDaily.txt'.format(s))
         #cwd = '/filesystem/{}/'.format(requestId)
         for f in os.listdir(cwd):
           if f.startswith("OliveDaily") or f.startswith("OliveSummaries"):
@@ -202,25 +234,22 @@ def polling(message):
           ContentType='application/json',
           Key=json_file_name
         )
+        print('esce qui')
+        remove_files(cwd, DATASET_PATH, NEW_PATH)
         #raise
         return e
-  
-  #remove files
-  rm_files = [f for f in os.listdir(cwd+DATASET_PATH+NEW_PATH)]
-  for f in rm_files:
-    os.remove(cwd+DATASET_PATH+NEW_PATH+f) 
-  
-  #remove files
-  rm_files2 = [f for f in os.listdir(cwd+DATASET_PATH+DAILY_PATH)]
-  for f in rm_files2:
-    os.remove(cwd+DATASET_PATH+DAILY_PATH+f)
+        
+  remove_files(cwd, DATASET_PATH, NEW_PATH)
   
 
   try:
-        s3Client.get_object(Bucket=BUCKET_NAME, Key="{}/wf/{}/".format(dataset, wf) + zip_file_name)
+        print(zip_file_name)
+        print(BUCKET_NAME)
+        s3Client.get_object(Bucket=SECOND_BUCKET_NAME, Key="{}/wf/{}/".format(dataset, wf) + zip_file_name)
+        
         data = {
-          "state": "working",
-          "requestId": requestId
+          "state": "done",
+          "url": f"http://{SECOND_BUCKET_NAME}.s3.eu-west-1.amazonaws.com/"+ "{}/wf/{}/".format(dataset, wf) + zip_file_name
         }
         s3Client.put_object(
           Body=json.dumps(data),
@@ -228,6 +257,7 @@ def polling(message):
           ContentType='application/json',
           Key=json_file_name
         )
+        return "done"
   except ClientError as e:
     if e.response['Error']['Code'] == 'NoSuchKey':
       data = {
@@ -240,7 +270,8 @@ def polling(message):
         ContentType='application/json',
         Key=json_file_name
       )
-  return "done"
+    return e
+
 
 
 if __name__ == "__main__":
@@ -261,10 +292,10 @@ if __name__ == "__main__":
             print(message)
             res = polling(message)
             print(res)
+            break
             if res == 'done':
                 response = sqs.delete_message(
                     QueueUrl=queue_url,
                     ReceiptHandle=receipt_handler
                 )
                 print(response)
-        #break

@@ -19,6 +19,7 @@ functions:
                         edate: true
                         model: true
                         output_time_interval: true
+                        resolution: true
             cors: true
             #reqValidatorName: validator
             # authorizer:
