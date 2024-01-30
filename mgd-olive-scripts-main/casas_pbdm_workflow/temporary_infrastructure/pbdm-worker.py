@@ -74,6 +74,7 @@ def polling(message):
   global coords_file
   global PATH
   global DATASET_PATH
+  coords_file = 'punti.dat'
   requestId = message['requestId']
   end_date = message['end_date']
   start_date = message['start_date']
@@ -92,7 +93,7 @@ def polling(message):
     else: 
       PATH = PATH.replace('txtfiles\\','txtfiles_1km\\')
 
-  zip_file_name = '{}_{}_{}_{}_{}.zip'.format(dataset, model, start_date.replace('/', '-'), end_date.replace('/', '-'), country)
+  zip_file_name = '{}_{}_{}_{}_{}{}_oti{}.zip'.format(dataset, model, start_date.replace('/', '-'), end_date.replace('/', '-'), country,resolution, otinterval)
   #json_file_name = '{}json/{}_{}_{}_{}_{}.json'.format(SECOND_BUCKET_PATH.format(dataset), dataset, model, start_date.replace('/', '-'), end_date.replace('/', '-'), country)
   # es agmerra/wf/pbdm/json/
   json_file_name = '{}json/{}.json'.format(SECOND_BUCKET_PATH.format(dataset, wf), requestId)
@@ -101,7 +102,6 @@ def polling(message):
   start_date = datetime.date(int(start_date[0]), int(start_date[1]),int(start_date[2]))
   end_date = end_date.split('/')
   end_date = datetime.date(int(end_date[0]), int(end_date[1]), int(end_date[2]))
-  print("qui entra")
 
   try:
     data = {
@@ -121,11 +121,12 @@ def polling(message):
     else:
       try:
         try:
-          print('qui entra')
           # coords file (punti.dat) dovrà trovarsi dentro /dataset/country/
           # reading coords file, value  row   col   lon   lat   country
           print(cwd+DATASET_PATH+"\\"+coords_file)
+          list_files = []
           with open(cwd+DATASET_PATH+"\\"+coords_file, 'r') as f:
+            print(cwd+DATASET_PATH+"\\"+coords_file)
             for line in f.readlines():
               values = line.replace('\n', '').split('\t')
               name = '{}_{}_{}_{}.txt'.format(dataset, values[1], values[2], values[5])
@@ -133,11 +134,10 @@ def polling(message):
               #values[5].split('-')[0]
               if resolution != "":
                 file_name = '{}{}.txt'.format(cwd+DATASET_PATH+PATH, values[2])
-                newfile_name = '{}{}.txt'.format(cwd+DATASET_PATH+NEW_PATH, values[2])
-
+                list_files.append('{}.txt'.format(values[2]))
               else:
                 file_name = '{}_{}_{}_{}.txt'.format(cwd+DATASET_PATH+PATH+dataset, values[1], values[2],values[5].split('-')[0])
-                newfile_name = '{}_{}_{}_{}.txt'.format(cwd+DATASET_PATH+NEW_PATH+dataset, values[1], values[2], values[5])
+                list_files.append('{}_{}_{}.txt'.format(values[1], values[2], values[5]))
               
               # if file doesn't exists in local, download it from s3
               if not os.path.isfile(file_name):
@@ -147,24 +147,6 @@ def polling(message):
                 except botocore.exceptions.ClientError as e:
                   if e.response['Error']['Code'] == "404":
                     pass
-              #i = 0
-              # opening file AGmerra in txtfiles folder
-              with open(file_name, 'r') as file:
-                # creating newfile_name on output folder
-                with open(newfile_name, 'w',newline='\r' ) as newf:
-                  lines = file.readlines()
-                  print(len(lines))
-                  newf.write(lines[0])
-                  newf.write(lines[1])
-                  newf.write(lines[2])
-                  days = start_date-datetime.date(date[dataset][country],1,1)
-                  diff = end_date-start_date
-                  print(newfile_name)
-                  print(days.days+3)
-                  print(days.days+diff.days+4)
-                  for n in range(days.days+3, days.days+diff.days+4):
-                    print(n)
-                    newf.write(lines[n])
         except Exception as e:
           data = {
             "state": "failed",
@@ -180,34 +162,25 @@ def polling(message):
           return e
           #raise
         
-        #rm_files = [f for f in os.listdir(cwd+PATH)]
-        #for f in rm_files:
-        #  os.remove(cwd+PATH+f)
-
         requestId = message['requestId']
         #for each file on output folder
         i = 0
         s = ""
         commands = []
-        for file in os.listdir(cwd+DATASET_PATH+NEW_PATH):
+        for file in list_files:
+          print("file: ", file)
           # launch command like this -> wine olive_no-w olive.ini 01/01/1990 01/01/2000 file.txt
-          cmdCommand ='{} {} {} {} {} {}'.format('.\{}_no-w.exe'.format(model), '.\{}.ini'.format(model), ' {} {} {} '.format(str(start_date.month), str(start_date.day), str(start_date.year)),' {} {} {} '.format(str(end_date.month), str(end_date.day), str(end_date.year)),otinterval, cwd+DATASET_PATH+NEW_PATH+file)     #specify your cmd command
-         
+          cmdCommand ='{} {} {} {} {} {}'.format('.\{}_no-w.exe'.format(model), '.\{}.ini'.format(model), ' {} {} {} '.format(str(start_date.month), str(start_date.day), str(start_date.year)),' {} {} {} '.format(str(end_date.month), str(end_date.day), str(end_date.year)),otinterval, cwd+DATASET_PATH+PATH+file)     #specify your cmd command
           print(cmdCommand)
+          # print(cmdCommand)
           process = subprocess.Popen(cmdCommand.split(), stdout=subprocess.PIPE)
-          try:
-            process.wait()
-          except subprocess.TimeoutExpired:
-            process.kill()
+          #commands.append(process)
+          process.wait()
           i = i + 1
           fd = os.rename('OliveDaily.txt', 'OliveDaily{}.txt'.format(i))
-          #shutil.move('OliveDaily{}.txt'.format(i), os.path.join(cwd, 'OliveDaily{}.txt'.format(i)))
-          s = s + 'OliveDaily{}.txt'.format(i)
-          #os.system('del OliveDaily.txt')
-          
+          s = s + 'OliveDaily{}.txt'.format(i)          
         
         os.system('type {} > OliveDaily.txt'.format(s))
-        #cwd = '/filesystem/{}/'.format(requestId)
         for f in os.listdir(cwd):
           if f.startswith("OliveDaily") or f.startswith("OliveSummaries"):
               os.rename(f, cwd+DATASET_PATH+DAILY_PATH+f)
@@ -223,6 +196,7 @@ def polling(message):
         bucket2.upload_file(cwd+DATASET_PATH+DAILY_PATH+zip_file_name, SECOND_BUCKET_PATH.format(dataset) + zip_file_name)
         object = s3.Bucket(SECOND_BUCKET_NAME).Object(SECOND_BUCKET_PATH.format(dataset) + zip_file_name)
         object.Acl().put(ACL='public-read')
+        list_files = []
       except Exception as e:
         data = {
           "state": "failed",
@@ -292,7 +266,6 @@ if __name__ == "__main__":
             print(message)
             res = polling(message)
             print(res)
-            break
             if res == 'done':
                 response = sqs.delete_message(
                     QueueUrl=queue_url,
