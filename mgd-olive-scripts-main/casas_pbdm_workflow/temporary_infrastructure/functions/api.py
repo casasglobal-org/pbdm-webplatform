@@ -222,7 +222,7 @@ def pbdm_var_check(sdate, edate, country, dataset, model, out_time_int, values, 
     if country not in values[dataset]['country']:
         return 'country value not valid!'
 
-    if out_time_int != values[dataset][country]['output_time_interval']:
+    if out_time_int not in values[dataset][country]['output_time_interval']:
         return 'output_time_interval value not valid!'
     
     if len(values[dataset][country]['resolution']) != 0:
