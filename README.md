@@ -30,6 +30,7 @@ docker compose up --no-deps -d app
 N.B you have to use the Dockerfile with ENVs defined (NOT remove the other Dockerfile, just rename it)
 
 ## File tree
+```
 ├── pre-processing
 │   ├── agmerra_review.py -> pre-processing for agmerra files
 │   ├── bounding_box.py -> cut agera5 files
@@ -152,7 +153,7 @@ List of points for different locations:
     │   ├── safe.js
     │   └── themes
     │       └── generic-logging.js
-
+```
 
 ## API utilization:
 
