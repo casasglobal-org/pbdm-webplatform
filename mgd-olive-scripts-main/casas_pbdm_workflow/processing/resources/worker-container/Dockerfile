@@ -18,21 +18,27 @@ COPY pbdm /
 
 RUN \
     echo "**** install Python ****" && \
-    apk add --no-cache python3 && \
+    apk add --no-cache python3 py3-pip && \
     if [ ! -e /usr/bin/python ]; then ln -sf python3 /usr/bin/python ; fi && \
     pip3 install --upgrade pip && \
 	mkdir -p /aws && \
 	apk -Uuv add groff less python3 py-pip 
 
 RUN \
-	pip3 install --upgrade boto3==1.26.63
+	pip3 install --upgrade boto3==1.23.10 
 
 RUN python3 --version
+
+RUN \
+    apk -Uuv add groff less python3 py-pip && \
+    pip install six \
+    pip install awscli && \
+    rm /var/cache/apk/*
 
 RUN \	
     echo "**** install Build-Base ****" && \
 	apk add build-base && \
-    apk add --no-cache aws-cli && \
+    # apk add --no-cache aws-cli && \
 	apk add python3-dev && \
 	apk add libffi && \
 	apk add libffi-dev && \
@@ -52,6 +58,8 @@ COPY run.sh /
 ENTRYPOINT ["/bin/sh"]
 CMD ["run.sh"]
 
+ENV AWS_ACCESS_KEY_ID AKIAZUTGR2QLQBHUAZHR
+ENV AWS_SECRET_ACCESS_KEY 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
 ENV BUCKET_NAME dev-pbdm-workflow
 ENV TASK_CLUSTER dev-ict-platform-pbdm-wf-cluster
 ENV TASK_CONTAINER  dev-ict-platform-pbdm-wf-container
