@@ -1,0 +1,6 @@
+TODO
+
+- mount efs on ecs container fargate task
+- move win ec2 files to efs
+- update endpoint apigw to use step functions
+- dismiss temporary infra
