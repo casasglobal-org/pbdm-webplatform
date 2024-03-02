@@ -138,9 +138,9 @@ def polling():
         commands = []
         for file in os.listdir(cwd+NEW_PATH):
           # launch command like this -> wine olive_no-w olive.ini 01/01/1990 01/01/2000 file.txt
-          cmdCommand ='wine {} {} {} {} {} {}'.format('./{}_no-w.exe'.format(model), './{}.ini'.format(model), ' {} {} {} '.format(str(start_date.month), str(start_date.day), str(start_date.year)),' {} {} {} '.format(str(end_date.month), str(end_date.day), str(end_date.year)),otinterval, cwd+NEW_PATH+file)     #specify your cmd command
+          cmdCommand ='wine {} {} {} {} {} {}'.format('./{}.exe'.format(model), './{}.ini'.format(model), ' {} {} {} '.format(str(start_date.month), str(start_date.day), str(start_date.year)),' {} {} {} '.format(str(end_date.month), str(end_date.day), str(end_date.year)),otinterval, cwd+NEW_PATH+file)     #specify your cmd command
          
-          # print(cmdCommand)
+          print(cmdCommand)
           process = subprocess.Popen(cmdCommand.split(), stdout=subprocess.PIPE)
           #commands.append(process)
           process.wait()

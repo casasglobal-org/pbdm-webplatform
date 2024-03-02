@@ -3,7 +3,7 @@
 # cd filesystem/
 mkdir $requestId
 cp -r ../lut/ ./$requestId/lut
-cp ../Olive.ini ../Olive_no-w.exe ../pbdm-worker.py ./$requestId/
+cp ../Olive.ini ../Olive.exe ../pbdm-worker.py ./$requestId/
 cd $requestId/
 mkdir txtfiles && mkdir daily && mkdir output
 #sostituisci con file su efs
