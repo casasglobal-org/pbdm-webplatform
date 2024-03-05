@@ -57,20 +57,3 @@ RUN \
 COPY run.sh /
 ENTRYPOINT ["/bin/sh"]
 CMD ["run.sh"]
-
-ENV BUCKET_NAME dev-pbdm-workflow
-ENV TASK_CLUSTER dev-ict-platform-pbdm-wf-cluster
-ENV TASK_CONTAINER  dev-ict-platform-pbdm-wf-container
-ENV TASK_DEFINITON  dev-ict-platform-pbdm-task-definition
-ENV TASK_SECURITYGROUP sg-0ab5f6e8b5030a25b
-ENV TASK_SUBNET subnet-0f460b05181a0e248
-ENV stage dev
-ENV requestId 123Stella
-ENV end_date 1981/12/31
-ENV start_date 1980/01/01
-ENV country ESP-AN
-ENV model olive
-ENV dataset agmerra
-ENV output_time_interval 365
-ENV REGION eu-west-1
-ENV wf pbdm

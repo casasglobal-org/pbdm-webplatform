@@ -18,25 +18,31 @@ COPY pbdm /
 
 RUN \
     echo "**** install Python ****" && \
-    apk add --no-cache python3 && \
+    apk add --no-cache python3 py3-pip && \
     if [ ! -e /usr/bin/python ]; then ln -sf python3 /usr/bin/python ; fi && \
     pip3 install --upgrade pip && \
-    pip3 install awscli && \
-    rm /var/cache/apk/* && \
 	mkdir -p /aws && \
 	apk -Uuv add groff less python3 py-pip 
 
 RUN \
-	pip3 install boto3 
+	pip3 install --upgrade boto3==1.23.10 
+
+RUN python3 --version
+
+RUN \
+    apk -Uuv add groff less python3 py-pip && \
+    pip install six \
+    pip install awscli && \
+    rm /var/cache/apk/*
 
 RUN \	
     echo "**** install Build-Base ****" && \
 	apk add build-base && \
+    # apk add --no-cache aws-cli && \
 	apk add python3-dev && \
 	apk add libffi && \
 	apk add libffi-dev && \
-	apk add openssl-dev && \
-    apk add awscli
+	apk add openssl-dev
 
 RUN \
     apk add --update python3 python3-dev py-pip build-base && \
@@ -51,3 +57,23 @@ RUN \
 COPY run.sh /
 ENTRYPOINT ["/bin/sh"]
 CMD ["run.sh"]
+
+
+ENV BUCKET_NAME dev-pbdm-workflow
+ENV SECOND_BUCKET_NAME dev-pbdm-workflow
+ENV TASK_CLUSTER dev-ict-platform-pbdm-wf-cluster
+ENV TASK_CONTAINER  dev-ict-platform-pbdm-wf-container
+ENV TASK_DEFINITON  dev-ict-platform-pbdm-task-definition
+ENV TASK_SECURITYGROUP sg-0ab5f6e8b5030a25b
+ENV TASK_SUBNET subnet-0f460b05181a0e248
+ENV stage dev
+ENV requestId 123Stella
+ENV end_date 1981/12/31
+ENV start_date 1980/01/01
+ENV country ESP-AN
+ENV model olive
+ENV dataset agmerra
+ENV output_time_interval 365
+ENV resolution 250m
+ENV REGION eu-west-1
+ENV wf pbdm
