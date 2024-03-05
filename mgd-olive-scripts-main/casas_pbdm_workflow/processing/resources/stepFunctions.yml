@@ -22,8 +22,8 @@ stepFunctions:
                                         Environment: 
                                             -   Name: BUCKET_NAME
                                                 Value: "${self:custom.BUCKET_NAME}"
-                                            # -   Name: DYNAMO_TABLE
-                                            #     Value: "${self:custom.dynamodbtable}"
+                                            -   Name: SECOND_BUCKET_NAME
+                                                Value: "${self:custom.SECOND_BUCKET_NAME}"
                                             -   Name: requestId
                                                 Value.$: "$.requestId"
                                             -   Name: end_date
@@ -40,6 +40,8 @@ stepFunctions:
                                                 Value.$: "$.output_time_interval"
                                             -   Name: wf
                                                 Value.$: "$.wf"
+                                            -   Name: resolution
+                                                Value.$: "$.resolution"
                             NetworkConfiguration:
                                 AwsvpcConfiguration:
                                     Subnets:

@@ -1,8 +1,8 @@
-Resources:
-  S3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: "${self:custom.BUCKET_NAME}"
+# Resources:
+#   S3Bucket:
+#     Type: AWS::S3::Bucket
+#     Properties:
+#       BucketName: "${self:custom.BUCKET_NAME}"
 
 # TODO
 # ApiGatewayStepFunctionsRole:

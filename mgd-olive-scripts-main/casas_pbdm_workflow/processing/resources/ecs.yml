@@ -38,8 +38,7 @@ Resources:
       Volumes:
         - Name: data
           EfsVolumeConfiguration:
-            FileSystemId: 
-              Ref: FileSystem
+            FileSystemId: fs-07dbdf698dfaa165c
   ecr:
     Type: AWS::ECR::Repository
     Properties: 
