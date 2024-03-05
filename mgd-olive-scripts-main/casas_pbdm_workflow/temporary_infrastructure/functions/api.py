@@ -144,7 +144,7 @@ def check_if_task_already_exists(requestId, sdate, edate, country, dataset, mode
     # json_file_name = '{}json/{}_{}_{}_{}_{}.json'.format(BUCKET_PATH, dataset, model, sdate.replace('/', '-'), edate.replace('/', '-'), country)
     json_file_name = '{}json/{}.json'.format(BUCKET_PATH.format(dataset, id), requestId)
     zip_file_name = '{}{}_{}_{}_{}_{}.zip'.format(BUCKET_PATH, dataset, model, sdate.replace('/', '-'), edate.replace('/', '-'), country)
-    print(zip_file_name)
+    print(zip_file_name)    
     try:
         json_file = json.loads(s3Client.get_object(
             Bucket=BUCKET_NAME,

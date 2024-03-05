@@ -17,6 +17,7 @@ provider:
 
 custom:
   BUCKET_NAME: "${self:provider.stage}-pbdm-workflow"
+  SECOND_BUCKET_NAME: "data.pbdm.it"
   task_definition: "${self:provider.stage}-pbdm-task-definition"
   dynamodbtable: ${self:provider.stage}-pbdm-wf
   
@@ -36,3 +37,4 @@ resources:
 
   # s3
   - ${file(resources/s3.yml)}
+
