@@ -8,7 +8,7 @@ plugins:
 
 provider:
   name: aws
-  runtime: python3.7
+  runtime: python3.10
   region: ${opt:region, 'eu-west-1'}
   stage: ${opt:stage, 'dev'}
   endpointType: REGIONAL
@@ -19,8 +19,8 @@ provider:
 
 custom:
   env:  ${self:provider.stage}
-  BUCKET_NAME: data.med-gold.eu
-  workflow_table: ${self:provider.stage}-workflow
+  BUCKET_NAME: dev-pbdm-workflow
+  workflow_table: ${self:provider.stage}-pbdm-workflow
   clusterName: ${self:provider.stage}-pbdm-wf-cluster
   #fargateLambdaName: ${self:provider.stage}--pbdm-wf-worker-fargate
   StepFunctionArn: "arn:aws:states:${self:provider.region}:#{AWS::AccountId}:stateMachine:${self:provider.stage}-pbdm-sf"

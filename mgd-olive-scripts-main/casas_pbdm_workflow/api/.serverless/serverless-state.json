@@ -6,7 +6,7 @@
     },
     "provider": {
       "name": "aws",
-      "runtime": "python3.7",
+      "runtime": "python3.10",
       "region": "eu-west-1",
       "stage": "dev",
       "endpointType": "REGIONAL",
@@ -108,10 +108,10 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/ict-platform-pbdm-api/dev/1693936854668-2023-09-05T18:00:54.668Z/ict-platform-pbdm-api.zip"
+                "S3Key": "serverless/ict-platform-pbdm-api/dev/1709584324186-2024-03-04T20:32:04.186Z/ict-platform-pbdm-api.zip"
               },
               "Handler": "functions/api.index",
-              "Runtime": "python3.7",
+              "Runtime": "python3.10",
               "FunctionName": "dev-pbdm-api-wf",
               "MemorySize": 1024,
               "Timeout": 6,
@@ -121,8 +121,8 @@
                     "Fn::Sub": "arn:aws:states:eu-west-1:${AWS::AccountId}:stateMachine:dev-pbdm-sf"
                   },
                   "cluster_name": "dev-pbdm-wf-cluster",
-                  "BUCKET_NAME": "data.med-gold.eu",
-                  "workflow_table": "dev-workflow"
+                  "BUCKET_NAME": "dev-pbdm-workflow",
+                  "workflow_table": "dev-pbdm-workflow"
                 }
               },
               "Role": {
@@ -144,16 +144,16 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/ict-platform-pbdm-api/dev/1693936854668-2023-09-05T18:00:54.668Z/ict-platform-pbdm-api.zip"
+                "S3Key": "serverless/ict-platform-pbdm-api/dev/1709584324186-2024-03-04T20:32:04.186Z/ict-platform-pbdm-api.zip"
               },
               "Handler": "functions/request-api.state",
-              "Runtime": "python3.7",
+              "Runtime": "python3.10",
               "FunctionName": "dev-pbdm-api-state",
               "MemorySize": 1024,
               "Timeout": 6,
               "Environment": {
                 "Variables": {
-                  "BUCKET_NAME": "data.med-gold.eu",
+                  "BUCKET_NAME": "dev-pbdm-workflow",
                   "cluster_name": "dev-pbdm-wf-cluster",
                   "partial_url": "https://s3-eu-west-1.amazonaws.com",
                   "sf_partialArn": {
@@ -173,24 +173,24 @@
               "staterequestrole"
             ]
           },
-          "ApiLambdaVersionNRH2d6wM38bZsuIwFmeC8lQUQRoeJX0a97bKUSVtk": {
+          "ApiLambdaVersionTqFpejsU6J7WTvii74qq12GdA4cqta3YON0Vweqp4": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "ApiLambdaFunction"
               },
-              "CodeSha256": "kmRoN1gl3ggDkbb0XrhohEE3SM3BdhULrjRGz5Cgah4="
+              "CodeSha256": "tbyp2/1L4qyKnCYDcT/qxoVN6ZNlQWIlCGwzXL15ZYw="
             }
           },
-          "RequestLambdaVersionWincpFlSTkxuIdKUfUJmj5YxqPiLjOU0fBPyjewuL6Q": {
+          "RequestLambdaVersionnPucEBLguyDbnXyL6iIcolF0Rd4TWxnG3F7oTS9yL0U": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "RequestLambdaFunction"
               },
-              "CodeSha256": "kmRoN1gl3ggDkbb0XrhohEE3SM3BdhULrjRGz5Cgah4="
+              "CodeSha256": "tbyp2/1L4qyKnCYDcT/qxoVN6ZNlQWIlCGwzXL15ZYw="
             }
           },
           "ApiGatewayRestApi": {
@@ -490,7 +490,7 @@
               "Name": "ict-platform-pbdm-api-dev | Validate request body and querystring parameters"
             }
           },
-          "ApiGatewayDeployment1693936850782": {
+          "ApiGatewayDeployment1709584321332": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -619,7 +619,7 @@
                           "s3:PutObject"
                         ],
                         "Resource": [
-                          "arn:aws:s3:::data.med-gold.eu/*"
+                          "arn:aws:s3:::dev-pbdm-workflow/*"
                         ]
                       },
                       {
@@ -649,7 +649,7 @@
                         ],
                         "Resource": [
                           {
-                            "Fn::Sub": "arn:aws:dynamodb:eu-west-1:${AWS::AccountId}:table/dev-mgd-ict-platform-workflow"
+                            "Fn::Sub": "arn:aws:dynamodb:eu-west-1:${AWS::AccountId}:table/dev-pbdm-workflow"
                           }
                         ]
                       }
@@ -707,7 +707,7 @@
                           "s3:GetObject"
                         ],
                         "Resource": [
-                          "arn:aws:s3:::data.med-gold.eu/*"
+                          "arn:aws:s3:::dev-pbdm-workflow/*"
                         ]
                       },
                       {
@@ -751,7 +751,7 @@
           "ApiLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "ApiLambdaVersionNRH2d6wM38bZsuIwFmeC8lQUQRoeJX0a97bKUSVtk"
+              "Ref": "ApiLambdaVersionTqFpejsU6J7WTvii74qq12GdA4cqta3YON0Vweqp4"
             },
             "Export": {
               "Name": "sls-ict-platform-pbdm-api-dev-ApiLambdaFunctionQualifiedArn"
@@ -760,7 +760,7 @@
           "RequestLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "RequestLambdaVersionWincpFlSTkxuIdKUfUJmj5YxqPiLjOU0fBPyjewuL6Q"
+              "Ref": "RequestLambdaVersionnPucEBLguyDbnXyL6iIcolF0Rd4TWxnG3F7oTS9yL0U"
             },
             "Export": {
               "Name": "sls-ict-platform-pbdm-api-dev-RequestLambdaFunctionQualifiedArn"
@@ -880,8 +880,8 @@
     },
     "custom": {
       "env": "dev",
-      "BUCKET_NAME": "data.med-gold.eu",
-      "workflow_table": "dev-workflow",
+      "BUCKET_NAME": "dev-pbdm-workflow",
+      "workflow_table": "dev-pbdm-workflow",
       "clusterName": "dev-pbdm-wf-cluster",
       "StepFunctionArn": "arn:aws:states:eu-west-1:#{AWS::AccountId}:stateMachine:dev-pbdm-sf",
       "StepFunctionExecutionArn": "arn:aws:states:eu-west-1:#{AWS::AccountId}:execution:dev-pbdm-sf:",
@@ -937,15 +937,15 @@
         "environment": {
           "sf_arn": "arn:aws:states:eu-west-1:#{AWS::AccountId}:stateMachine:dev-pbdm-sf",
           "cluster_name": "dev-pbdm-wf-cluster",
-          "BUCKET_NAME": "data.med-gold.eu",
-          "workflow_table": "dev-workflow"
+          "BUCKET_NAME": "dev-pbdm-workflow",
+          "workflow_table": "dev-pbdm-workflow"
         },
         "package": {},
         "memory": 1024,
         "timeout": 6,
-        "runtime": "python3.7",
+        "runtime": "python3.10",
         "vpc": {},
-        "versionLogicalId": "ApiLambdaVersionNRH2d6wM38bZsuIwFmeC8lQUQRoeJX0a97bKUSVtk"
+        "versionLogicalId": "ApiLambdaVersionTqFpejsU6J7WTvii74qq12GdA4cqta3YON0Vweqp4"
       },
       "request": {
         "handler": "functions/request-api.state",
@@ -987,7 +987,7 @@
           }
         ],
         "environment": {
-          "BUCKET_NAME": "data.med-gold.eu",
+          "BUCKET_NAME": "dev-pbdm-workflow",
           "cluster_name": "dev-pbdm-wf-cluster",
           "partial_url": "https://s3-eu-west-1.amazonaws.com",
           "sf_partialArn": "arn:aws:states:eu-west-1:#{AWS::AccountId}:execution:dev-pbdm-sf:"
@@ -995,9 +995,9 @@
         "package": {},
         "memory": 1024,
         "timeout": 6,
-        "runtime": "python3.7",
+        "runtime": "python3.10",
         "vpc": {},
-        "versionLogicalId": "RequestLambdaVersionWincpFlSTkxuIdKUfUJmj5YxqPiLjOU0fBPyjewuL6Q"
+        "versionLogicalId": "RequestLambdaVersionnPucEBLguyDbnXyL6iIcolF0Rd4TWxnG3F7oTS9yL0U"
       }
     },
     "resources": {
@@ -1042,7 +1042,7 @@
                         "s3:PutObject"
                       ],
                       "Resource": [
-                        "arn:aws:s3:::data.med-gold.eu/*"
+                        "arn:aws:s3:::dev-pbdm-workflow/*"
                       ]
                     },
                     {
@@ -1069,7 +1069,7 @@
                         "dynamodb:Scan"
                       ],
                       "Resource": [
-                        "arn:aws:dynamodb:eu-west-1:#{AWS::AccountId}:table/dev-mgd-ict-platform-workflow"
+                        "arn:aws:dynamodb:eu-west-1:#{AWS::AccountId}:table/dev-pbdm-workflow"
                       ]
                     }
                   ]
@@ -1124,7 +1124,7 @@
                         "s3:GetObject"
                       ],
                       "Resource": [
-                        "arn:aws:s3:::data.med-gold.eu/*"
+                        "arn:aws:s3:::dev-pbdm-workflow/*"
                       ]
                     },
                     {
@@ -1184,10 +1184,10 @@
     "app": "ict-platform-backend-app",
     "layers": {},
     "isDashboardMonitoringPreconfigured": false,
-    "artifact": "/Users/federicastocchino/Desktop/PERSONALI/PBDM/mgd-olive-scripts-main/casas_pbdm_workflow/api/.serverless/ict-platform-pbdm-api.zip"
+    "artifact": "/Users/federicastocchino/Desktop/PROGETTI/PBDM/pbdm-workflow/mgd-olive-scripts-main/casas_pbdm_workflow/api/.serverless/ict-platform-pbdm-api.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/ict-platform-pbdm-api/dev/1693936854668-2023-09-05T18:00:54.668Z",
+    "artifactDirectoryName": "serverless/ict-platform-pbdm-api/dev/1709584324186-2024-03-04T20:32:04.186Z",
     "artifact": "ict-platform-pbdm-api.zip"
   }
 }

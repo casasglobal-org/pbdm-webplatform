@@ -37,7 +37,7 @@ def index(event, context):
             FilterExpression = Attr('id').eq(wf)&Attr('datasets').contains(dataset)
         )
         items = response['Items']
-        if len(items) is 0:
+        if len(items) == 0:
             raise Exception('Workflow not found!')
 
         sdate = query_params.get('sdate')
@@ -45,10 +45,11 @@ def index(event, context):
         country = query_params.get('country')
         model = query_params.get('model')
         out_time_int = query_params.get('output_time_interval')
+        resolution = query_params.get('resolution')
         print(sdate)
         values = items[0]
         print(values)
-        err_message = pbdm_var_check(sdate, edate, country, dataset, model, out_time_int, values)
+        err_message = pbdm_var_check(sdate, edate, country, dataset, model, out_time_int, values, resolution)
 
         
         if 'no_error' in err_message:
@@ -60,10 +61,11 @@ def index(event, context):
                 'model': model,
                 'dataset': dataset,
                 'output_time_interval': out_time_int,
-                'wf': wf
+                'wf': wf,
+                'resolution': resolution
             }
 
-            #response = check_if_task_already_exists(requestId, sdate, edate, country, dataset, model, out_time_int)
+            response = check_if_task_already_exists(requestId, sdate, edate, country, dataset, model, out_time_int, wf)
             response = {
                 'state': 'not found'
             }
@@ -130,10 +132,13 @@ def index(event, context):
 
 
 
-def check_if_task_already_exists(requestId, sdate, edate, country, dataset, model, out_time_int):
+def check_if_task_already_exists(requestId, sdate, edate, country, dataset, model, out_time_int, wf):
     # CHECK ON S3 FILE.TXT
-    json_file_name = '{}json/{}_{}_{}_{}_{}.json'.format(BUCKET_PATH, dataset, model, sdate.replace('/', '-'), edate.replace('/', '-'), country)
+    BUCKET_NAME = os.environ['BUCKET_NAME']
+    # json_file_name = '{}json/{}_{}_{}_{}_{}.json'.format(BUCKET_PATH, dataset, model, sdate.replace('/', '-'), edate.replace('/', '-'), country)
+    json_file_name = '{}json/{}.json'.format(BUCKET_PATH.format(dataset, id), requestId)
     zip_file_name = '{}{}_{}_{}_{}_{}.zip'.format(BUCKET_PATH, dataset, model, sdate.replace('/', '-'), edate.replace('/', '-'), country)
+    print(zip_file_name)    
     try:
         json_file = json.loads(s3Client.get_object(
             Bucket=BUCKET_NAME,
@@ -188,14 +193,14 @@ def check_if_task_already_exists(requestId, sdate, edate, country, dataset, mode
         }
 
 
-def pbdm_var_check(sdate, edate, country, dataset, model, out_time_int, values):
+def pbdm_var_check(sdate, edate, country, dataset, model, out_time_int, values, resolution):
     sdate = sdate.split('/')
     edate = edate.split('/')
 
-    if int(sdate[0]) < int(values[dataset]['sdate']):
+    if int(sdate[0]) < int(values[dataset][country]['sdate']):
         return 'sdate value not valid'
 
-    if int(edate[0]) > int(values[dataset]['edate']):
+    if int(edate[0]) > int(values[dataset][country]['edate']):
         return 'edate value not valid'
 
     try:
@@ -205,13 +210,17 @@ def pbdm_var_check(sdate, edate, country, dataset, model, out_time_int, values):
         return 'Invalid date! Correct date format is YYYY/MM/DD'
 
 
-    if model not in values[dataset]['model']:
+    if model not in values[dataset][country]['model']:
         return 'model value not valid'
 
     if country not in values[dataset]['country']:
         return 'country value not valid!'
 
-    if out_time_int != values[dataset]['output_time_interval']:
+    if out_time_int not in values[dataset][country]['output_time_interval']:
         return 'output_time_interval value not valid!'
+    
+    if len(values[dataset][country]['resolution']) != 0:
+        if resolution not in values[dataset][country]['resolution']:
+            return 'resolution value not valid!'
 
     return 'no_error'

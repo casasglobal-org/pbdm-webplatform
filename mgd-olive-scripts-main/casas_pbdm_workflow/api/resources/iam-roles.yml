@@ -48,7 +48,7 @@ Resources:
                                 Action:
                                     - "dynamodb:Scan"
                                 Resource:
-                                    - "arn:aws:dynamodb:${self:provider.region}:#{AWS::AccountId}:table/dev-mgd-ict-platform-workflow"
+                                    - "arn:aws:dynamodb:${self:provider.region}:#{AWS::AccountId}:table/${file(serverless.yml):custom.workflow_table}"
 
     staterequestrole:
         Type: AWS::IAM::Role
