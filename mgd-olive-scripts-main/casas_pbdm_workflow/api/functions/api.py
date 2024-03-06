@@ -80,28 +80,27 @@ def index(event, context):
                     }
                 }
 
-            #if response['state'] == 'not found':
-            sf_response=""
-            try:
-                # Trigger step function
-                sf_response = sf.start_execution(
-                    stateMachineArn=os.environ['sf_arn'],
-                    name=requestId,
-                    input= json.dumps(returnVal)
-                )
-            except ClientError as e:
-                return {
-                    'statusCode': 500,
-                    'body': json.dumps({
-                        "StepFunctions_Response": sf_response,
-                        "error": e
-                        }),
-                    'headers': {
-                        'Access-Control-Allow-Origin': '*'
+            if response['state'] == 'not found':
+                try:
+                    # Trigger step function
+                    sf_response = sf.start_execution(
+                        stateMachineArn=os.environ['sf_arn'],
+                        name=requestId,
+                        input= json.dumps(returnVal)
+                    )
+                except ClientError as e:
+                    return {
+                        'statusCode': 500,
+                        'body': json.dumps({
+                            "StepFunctions_Response": sf_response,
+                            "error": e
+                            }),
+                        'headers': {
+                            'Access-Control-Allow-Origin': '*'
+                        }
                     }
-                }
-            # else:
-            #     requestId = response['requestId']
+            else:
+                requestId = response['requestId']
             
             
         else:

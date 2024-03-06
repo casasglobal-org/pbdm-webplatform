@@ -54,11 +54,12 @@ RUN \
     winecfg && \
     echo "^^^ Don't worry about these errors ^^^"
 
-COPY run.sh /
+COPY run-local.sh /
 ENTRYPOINT ["/bin/sh"]
-CMD ["run.sh"]
+CMD ["run-local.sh"]
 
-
+ENV AWS_ACCESS_KEY_ID AKIAZUTGR2QLQBHUAZHR
+ENV AWS_SECRET_ACCESS_KEY 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
 ENV BUCKET_NAME dev-pbdm-workflow
 ENV SECOND_BUCKET_NAME dev-pbdm-workflow
 ENV TASK_CLUSTER dev-ict-platform-pbdm-wf-cluster
@@ -77,3 +78,7 @@ ENV output_time_interval 365
 ENV resolution 250m
 ENV REGION eu-west-1
 ENV wf pbdm
+
+
+# export AWS_ACCESS_KEY_ID=AKIAZUTGR2QLQBHUAZHR
+# export AWS_SECRET_ACCESS_KEY=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

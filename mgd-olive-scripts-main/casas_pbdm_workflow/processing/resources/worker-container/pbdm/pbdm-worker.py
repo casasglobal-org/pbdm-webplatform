@@ -40,16 +40,16 @@ date = {
 }
 
 
-def remove_files(cwd, DATASET_PATH, NEW_PATH):
+def remove_files(cwd, NEW_PATH):
   #remove files
-  rm_files = [f for f in os.listdir(cwd+DATASET_PATH+NEW_PATH)]
+  rm_files = [f for f in os.listdir(cwd+NEW_PATH)]
   for f in rm_files:
-    os.remove(cwd+DATASET_PATH+NEW_PATH+f) 
+    os.remove(cwd+NEW_PATH+f) 
   
   #remove files
-  rm_files2 = [f for f in os.listdir(cwd+DATASET_PATH+DAILY_PATH)]
+  rm_files2 = [f for f in os.listdir(cwd+DAILY_PATH)]
   for f in rm_files2:
-    os.remove(cwd+DATASET_PATH+DAILY_PATH+f)
+    os.remove(cwd+DAILY_PATH+f)
 
 def polling():
   global coords_file
@@ -59,14 +59,14 @@ def polling():
   requestId = os.environ['requestId']
   end_date = os.environ['end_date']
   start_date = os.environ['start_date']
-  country = os.environ['country']
+  country = os.environ['country'].replace("-250m", "").replace("-1km", "")
   model = os.environ['model']
   dataset = os.environ['dataset']
   wf = os.environ['wf']
   otinterval = os.environ['output_time_interval']
   cwd = os.getcwd()
   resolution = os.environ['resolution']
-  DATASET_PATH = "/filesystem/pbdm/{}/{}".format(dataset, country)
+  DATASET_PATH = "filesystem/pbdm/{}/{}".format(dataset, country)
   cwd = os.getcwd()
   if resolution != "": 
     coords_file = coords_file.replace(".dat", f"_{resolution}.dat")
@@ -115,10 +115,10 @@ def polling():
               # creating file agmerra for selected point (lat, lon) and saving it on txtfiles folder
               #values[5].split('-')[0]
               if resolution != "":
-                file_name = '{}{}.txt'.format(cwd+DATASET_PATH+PATH, values[2])
+                file_name = '{}{}.txt'.format("/"+DATASET_PATH+PATH, values[2])
                 list_files.append('{}.txt'.format(values[2]))
               else:
-                file_name = '{}_{}_{}_{}.txt'.format(cwd+DATASET_PATH+PATH+dataset, values[1], values[2],values[5].split('-')[0])
+                file_name = '{}_{}_{}_{}.txt'.format("/"+DATASET_PATH+PATH+dataset, values[1], values[2],values[5].split('-')[0])
                 list_files.append('{}_{}_{}.txt'.format(values[1], values[2], values[5]))
               
               # if file doesn't exists in local, download it from s3
@@ -152,9 +152,12 @@ def polling():
         for file in list_files:
           print("file: ", file)
           # launch command like this -> wine olive_no-w olive.ini 01/01/1990 01/01/2000 file.txt
-          cmdCommand ='wine {} {} {} {} {} {}'.format('./{}.exe'.format(model), './{}.ini'.format(model), ' {} {} {} '.format(str(start_date.month), str(start_date.day), str(start_date.year)),' {} {} {} '.format(str(end_date.month), str(end_date.day), str(end_date.year)),otinterval, cwd+DATASET_PATH+PATH+file)     #specify your cmd command
+          cmdCommand ='wine {} {} {} {} {} {}'.format('{}.exe'.format(model), '{}.ini'.format(model), ' {} {} {} '.format(str(start_date.month), str(start_date.day), str(start_date.year)),' {} {} {} '.format(str(end_date.month), str(end_date.day), str(end_date.year)),otinterval, "/"+DATASET_PATH+PATH+file)     #specify your cmd command
           print(cmdCommand)
           # print(cmdCommand)
+          process = subprocess.Popen(cmdCommand.split(), stdout=subprocess.PIPE)
+          #commands.append(process)
+          process.wait()
           process = subprocess.Popen(cmdCommand.split(), stdout=subprocess.PIPE)
           #commands.append(process)
           process.wait()
@@ -165,17 +168,17 @@ def polling():
         os.system('type {} > OliveDaily.txt'.format(s))
         for f in os.listdir(cwd):
           if f.startswith("OliveDaily") or f.startswith("OliveSummaries"):
-              os.rename(f, cwd+DATASET_PATH+DAILY_PATH+f)
+              os.rename(f, cwd+DAILY_PATH+f)
           print(str(datetime.date.today().strftime('%d')))
           if f.startswith("Olive_" + str(datetime.date.today().strftime('%d'))) or f.startswith('Gis'):
-            if not os.path.isfile(cwd+DATASET_PATH+DAILY_PATH+f):
-              os.rename(f, cwd+DATASET_PATH+DAILY_PATH+f)
-        os.chmod(cwd+DATASET_PATH+DAILY_PATH, 777)
-        for file in os.listdir(cwd+DATASET_PATH+DAILY_PATH):
-          with zipfile.ZipFile(cwd+DATASET_PATH+DAILY_PATH+zip_file_name, 'a') as myzip:
-            myzip.write(cwd+DATASET_PATH+DAILY_PATH+file, '{}/'.format(wf)+file)
+            if not os.path.isfile(cwd+DAILY_PATH+f):
+              os.rename(f, cwd+DAILY_PATH+f)
+        os.chmod(cwd+DAILY_PATH, 777)
+        for file in os.listdir(cwd+DAILY_PATH):
+          with zipfile.ZipFile(cwd+DAILY_PATH+zip_file_name, 'a') as myzip:
+            myzip.write(cwd+DAILY_PATH+file, '{}/'.format(wf)+file)
         # VERIFICA SE NECESSARIO RIMUOVERE I FILE 
-        bucket2.upload_file(cwd+DATASET_PATH+DAILY_PATH+zip_file_name, SECOND_BUCKET_PATH.format(dataset) + zip_file_name)
+        bucket2.upload_file(cwd+DAILY_PATH+zip_file_name, SECOND_BUCKET_PATH.format(dataset) + zip_file_name)
         object = s3.Bucket(SECOND_BUCKET_NAME).Object(SECOND_BUCKET_PATH.format(dataset) + zip_file_name)
         object.Acl().put(ACL='public-read')
         list_files = []
@@ -191,11 +194,11 @@ def polling():
           Key=json_file_name
         )
         print('esce qui')
-        remove_files(cwd, DATASET_PATH, NEW_PATH)
+        #remove_files(cwd, DATASET_PATH, NEW_PATH)
         #raise
         return e
         
-  remove_files(cwd, DATASET_PATH, NEW_PATH)
+  #remove_files(cwd, DATASET_PATH, NEW_PATH)
   
 
   try:

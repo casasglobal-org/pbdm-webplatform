@@ -10,7 +10,7 @@ RUN ["/sbin/apk.static", "add", "--update", "alpine-base", "xvfb", "wine", "wget
 ADD winetricks.sh /
 RUN chmod +x winetricks.sh && mv winetricks.sh /usr/bin/winetricks
 
-ENV WINEARCH win32
+# ENV WINEARCH win32
 ENV DISPLAY :0
 ENV REGION eu-west-1
 
