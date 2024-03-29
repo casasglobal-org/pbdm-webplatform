@@ -1,0 +1,19 @@
+version: "2"
+services:
+  app:
+    build:
+      # Build an image from the Dockerfile in the current directory
+      context: .
+    ports:
+      - 8080:80
+    environment:
+      PORT: "80"
+      end_date: ${END_DATE}
+      start_date: ${START_DATE}
+      country: ${COUNTRY}
+      model: ${MODEL}
+      dataset: ${DATASET}
+      output_time_interval: ${OUTPUT_TIME_INTERVAL}
+      resolution: ${RESOLUTION}
+    volumes:
+      - ${VOLUME}:/filesystem/pbdm/

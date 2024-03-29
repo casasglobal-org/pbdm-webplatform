@@ -185,7 +185,8 @@ def polling():
       except Exception as e:
         data = {
           "state": "failed",
-          "requestId": requestId
+          "requestId": requestId,
+          "error": e
         }
         s3Client.put_object(
           Body=json.dumps(data),
