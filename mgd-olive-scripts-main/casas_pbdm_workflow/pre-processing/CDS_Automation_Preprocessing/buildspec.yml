@@ -1,0 +1,25 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.10
+    commands:
+      - pip install -r src/requirements.txt
+      - pip install netCDF4 h5netcdf
+  pre_build:
+    commands:
+      # Esegui operazioni di configurazione iniziale
+      - echo "Fase di Configurazione Iniziale"
+      - echo "Imposta le variabili d'ambiente necessarie"
+      - echo "Altre operazioni di preparazione, se necessario"
+
+  build:
+    commands:
+      # Usa AWS SAM per impacchettare l'applicazione tramite AWS CloudFormation
+      - sam build
+
+artifacts:
+  type: zip
+  files:
+    - template-export.yml
