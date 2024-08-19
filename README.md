@@ -2,6 +2,49 @@
 
 Workflow to run PBDM executables compiled from Pascal source code.
 
+## Description
+
+This repository includes code for the CASAS-PBDM Web API workflow, initially developed for the case study on olive/olive oil under the MED-GOLD project  (<https://doi.org/10.3030/776467>), as part of the MED-GOLD ICT ecosystem for climate services in agriculture (<https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/horizon-results-platform/32534;keyword=med-gold>), and further developed under the TEBAKA project (<https://www.dtascarl.org/en/projects-and-initiatives/use-case-technology-transfer/tebaka/>).
+
+The MED-GOLD project has received funding from the European Union's Horizon 2020 Research and Innovation programme under Grant agreement No. 776467. Project TEBAKA (project ID: ARS01_00815) was co-funded by the European Union - ERDF and ESF, “PON Ricerca e Innovazione 2014-2020”.
+
+The following folders:
+
+```
+/mgd-olive-scripts-main/casas_pbdm_coffee/
+/mgd-olive-scripts-main/casas_pbdm_coffee/
+```
+
+include code developed for analyzing the olive and coffee systems using physiologically based demographic models (PBDMs) in a geographic information system (GIS) context.
+
+The following folder:
+
+```
+/mgd-olive-scripts-main/casas_pbdm_workflow/
+```
+
+includes code for the CASAS-PBDM Web API workflow to run the Windows executable for the olive PBDM system model compiled from the Pascal source code (see below).
+
+A short introduction and description follows that provides context for the CASAS-PBDM related code:
+
+CASAS Global (Center for the Analysis of Sustainable Agricultural Systems, see <http://www.casasglobal.org/>) physiologically based demographic models (CASAS-PBDMs) are one of the key existing technology components of the MED-GOLD project (Turning climate-related information into added value for traditional MEDiterranean Grape, OLive and Durum wheat food systems, see <https://doi.org/10.3030/776467>). Note that CASAS Global CEO Andrew Paul Gutierrez was part of the project's External Advisory Committee. The coffee system has been already developed using the PBDM approach and provides some basic info about the crop in Colombia, such as main climate-related problems including key pests. This info would serve as a starting point for developing a climate service for coffee (see Task 6.2). The model can be extended to different coffee species/cultivars and to explore its possibilities in a given set of climate conditions.
+
+The source code for PBDMs is Borland Pascal code that is embedded in a much larger code base including PBDMs for 40 different species of plants, herbivores, parasitoids, predators, and pathogens that were published as PBDM analyses implemented in a GIS context (1), and are simply a subset of all species modeled using PBDMs. Like the rest of the PBDM code base developed over the last three decades, the Pascal code for olive and coffee is currently not licensed nor it is deposited in a code repository, and is managed by the nonprofit scientific consortium CASAS Global (<http://www.casasglobal.org/>). The PBDM algorithms as well as key innovative code such as the Pascal subroutine for distributed maturation times with and without attrition, have been published in detail (2).
+
+The code included in this repository has been used in a research context under the MED-GOLD (3) and TEBAKA (4) projects.
+
+1. A. P. Gutierrez, L. Ponti, in Invasive Species and Global Climate Change, L. H. Ziska, J. S. Dukes, Eds. (CABI Publishing, Wallingford, UK, 2014), pp. 271–288.
+
+2. A. P. Gutierrez, Applied population ecology: a supply-demand approach (John Wiley and Sons, New York, USA, 1996; <https://www.wiley.com/en-us/Applied+Population+Ecology%3A+A+Supply+Demand+Approach-p-9780471135869>).
+
+3. Ponti, L., Gutierrez, A. P., Giannakopoulos, C., Varotsos, K. V., López Nevado, J., López Feria, S., Rivas González, F. W., Caboni, F., Stocchino, F., Rosati, A., Marchionni, D., Cure, J. R., Rodríguez, D., Terrado, M., De Felice, M., Dell’Aquila, A., Calmanti, S., Arjona, R., & Sanderson, M. (2024). Prospective regional analysis of olive and olive fly in Andalusia under climate change using physiologically based demographic modeling powered by cloud computing. Climate Services, 34, 100455. <https://doi.org/10.1016/j.cliser.2024.100455>
+
+
+4. Ponti, L., Gutierrez, A. P., Metz, M., Haas, J., Panzenböck, E., Neteler, M., Baldacchino, F., Ambrico, A., Baviello, G., Calvitti, M., Dell’Aquila, A., Calmanti, S., Lampazzi, E., Miceli, V., Cuna, D., Stocchino, F., & Carroccio, D. (2024, May 29). Realistic daily dynamics of olive and olive fly at 250 m resolution using cloud-gap-filled canopy temperature data from MODIS LST calibrated with MODIS NDVI. Super-Resolution and Downscaling for EO and Earth Science (SUREDOS24), 29-31 May 2024, ESA-ESRIN, Frascati, Italy, <https://suredos24.esa.int/>, Frascati, Italy. <https://doi.org/10.5281/zenodo.11374208>
+
+For further information, please contact Luigi Ponti (<luigi.ponti@enea.it>)
+
+
 ## Trello board
 
 Here we keep track of things:
