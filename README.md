@@ -4,7 +4,7 @@ Workflow to run PBDM executables compiled from Pascal source code.
 
 ## Description
 
-This repository includes code for the CASAS-PBDM Web API workflow, initially developed for the case study on olive/olive oil under the MED-GOLD project  (<https://doi.org/10.3030/776467>), as part of the MED-GOLD ICT ecosystem for climate services in agriculture (<https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/horizon-results-platform/32534;keyword=med-gold>), and further developed under the TEBAKA project (<https://www.dtascarl.org/en/projects-and-initiatives/use-case-technology-transfer/tebaka/>).
+This repository includes code for the CASAS-PBDM Web API workflow, initially developed for the case study on olive/olive oil under the [MED-GOLD project](<https://doi.org/10.3030/776467>), as part of the [MED-GOLD ICT ecosystem for climate services in agriculture](<https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/horizon-results-platform/32534;keyword=med-gold>), and further developed under the [TEBAKA project](<https://www.dtascarl.org/en/projects-and-initiatives/use-case-technology-transfer/tebaka/>).
 
 The MED-GOLD project has received funding from the European Union's Horizon 2020 Research and Innovation programme under Grant agreement No. 776467. Project TEBAKA (project ID: ARS01_00815) was co-funded by the European Union - ERDF and ESF, “PON Ricerca e Innovazione 2014-2020”.
 
