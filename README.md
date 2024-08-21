@@ -1,8 +1,4 @@
-# pbdm-workflow
-
-Workflow to run PBDM executables compiled from Pascal source code.
-
-## Description
+# Description
 
 This repository includes code for the CASAS-PBDM Web API workflow, initially developed for the case study on olive/olive oil under the [MED-GOLD project](<https://doi.org/10.3030/776467>), as part of the [MED-GOLD ICT ecosystem for climate services in agriculture](<https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/horizon-results-platform/32534;keyword=med-gold>), and further developed under the [TEBAKA project](<https://www.dtascarl.org/en/projects-and-initiatives/use-case-technology-transfer/tebaka/>).
 
@@ -29,6 +25,14 @@ The following folder:
 
 includes code for the CASAS-PBDM Web API workflow to run the Windows executable for the olive PBDM system model compiled from the Pascal source code (see below).
 
+The following folder:
+
+```
+/era5/
+```
+
+includes implementation of automated download and update of global AgERA5 weather data from the [Copernicus Climate Data Store](https://cds.climate.copernicus.eu/) to run the CASAS-PBDM Web API workflow.
+
 A short introduction and description follows that provides context for the CASAS-PBDM related code:
 
 CASAS Global (Center for the Analysis of Sustainable Agricultural Systems, see <http://www.casasglobal.org/>) physiologically based demographic models (CASAS-PBDMs) are one of the key existing technology components of the MED-GOLD project (Turning climate-related information into added value for traditional MEDiterranean Grape, OLive and Durum wheat food systems, see <https://doi.org/10.3030/776467>). Note that CASAS Global CEO Andrew Paul Gutierrez was part of the project's External Advisory Committee. The coffee system has been already developed using the PBDM approach and provides some basic info about the crop in Colombia, such as main climate-related problems including key pests. This info would serve as a starting point for developing a climate service for coffee (see Task 6.2). The model can be extended to different coffee species/cultivars and to explore its possibilities in a given set of climate conditions.
@@ -48,14 +52,17 @@ The code included in this repository has been used in a research context under t
 
 For further information, please contact Luigi Ponti (<luigi.ponti@enea.it>)
 
+## pbdm-workflow
 
-## Trello board
+Workflow to run PBDM executables compiled from Pascal source code.
+
+### Trello board
 
 Here we keep track of things:
 
 [PBDM-Workflow Trello board](https://trello.com/b/449PzQuo/pbdm-workflow)
 
-## How to run serverless project
+### How to run serverless project
 Navigate to the foldere where is the serverless.yaml file and run:
 
 ```
@@ -63,7 +70,7 @@ sls deploy
 ```
 N.B you have to previously set aws credentials in order to launch the cloudformation stack creation
 
-## How to run container locally
+### How to run container locally
 In order to launch docker container locally you have to install Docker Desktop.
 
 Then, you have to run the following commands:
@@ -76,7 +83,7 @@ docker compose up --no-deps -d app
 
 N.B you have to use the Dockerfile with ENVs defined (NOT remove the other Dockerfile, just rename it)
 
-## File tree
+### File tree
 ```
 ├── pre-processing
 │   ├── agmerra_review.py -> pre-processing for agmerra files
