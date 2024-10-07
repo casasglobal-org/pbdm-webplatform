@@ -6,9 +6,15 @@ Workflow to run PBDM executables compiled from Pascal source code.
 
 This repository includes code for the CASAS-PBDM Web API workflow, initially developed for the case study on olive/olive oil under the [MED-GOLD project](<https://doi.org/10.3030/776467>), as part of the [MED-GOLD ICT ecosystem for climate services in agriculture](<https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/horizon-results-platform/32534;keyword=med-gold>), and further developed under the [TEBAKA project](<https://www.dtascarl.org/en/projects-and-initiatives/use-case-technology-transfer/tebaka/>).
 
+[MED-GOLD CASAS-PBDM workflow infographic](https://doi.org/10.5281/zenodo.7928703):
+
 ![CASAS-PBDM infographic](med-gold_casas-pbdm_infographic.png?raw=true)
 
-See [TEBAKA GeoStory](https://tebaka.planetek.it/catalogue/#/geostory/37) and [TEBAKA Web API demo](https://d14jvp6nch1neo.cloudfront.net/)
+[PBDM workflow at ESA-SUREDOS24](https://doi.org/10.5281/zenodo.11374208):
+
+![PBDM workflow at ESA-SUREDOS24](PBDM-workflow-ESA-SUREDOS24.png?raw=true)
+
+See also [TEBAKA GeoStory](https://tebaka.planetek.it/catalogue/#/geostory/37) and [TEBAKA Web API demo](https://d14jvp6nch1neo.cloudfront.net/)
 
 The MED-GOLD project has received funding from the European Union's Horizon 2020 Research and Innovation programme under Grant agreement No. 776467. Project TEBAKA (project ID: ARS01_00815) was co-funded by the European Union - ERDF and ESF, “PON Ricerca e Innovazione 2014-2020”.
 
@@ -37,14 +43,14 @@ The source code for PBDMs is Borland Pascal code that is embedded in a much larg
 
 The code included in this repository has been used in a research context under the MED-GOLD (3) and TEBAKA (4) projects.
 
-1. A. P. Gutierrez, L. Ponti, in Invasive Species and Global Climate Change, L. H. Ziska, J. S. Dukes, Eds. (CABI Publishing, Wallingford, UK, 2014), pp. 271–288.
+1. A. P. Gutierrez, L. Ponti, in Invasive Species and Global Climate Change, L. H. Ziska, J. S. Dukes, Eds. (CABI Publishing, Wallingford, UK, 2014), pp. 271–288. [PDF](https://www.casasglobal.org/casas/wp-content/uploads/2017/04/Gutierrez-Ponti-2022b-InvasiveSpeciesGCC_proof.pdf)
 
 2. A. P. Gutierrez, Applied population ecology: a supply-demand approach (John Wiley and Sons, New York, USA, 1996; <https://www.wiley.com/en-us/Applied+Population+Ecology%3A+A+Supply+Demand+Approach-p-9780471135869>).
 
-3. Ponti, L., Gutierrez, A. P., Giannakopoulos, C., Varotsos, K. V., López Nevado, J., López Feria, S., Rivas González, F. W., Caboni, F., Stocchino, F., Rosati, A., Marchionni, D., Cure, J. R., Rodríguez, D., Terrado, M., De Felice, M., Dell’Aquila, A., Calmanti, S., Arjona, R., & Sanderson, M. (2024). Prospective regional analysis of olive and olive fly in Andalusia under climate change using physiologically based demographic modeling powered by cloud computing. Climate Services, 34, 100455. <https://doi.org/10.1016/j.cliser.2024.100455>
+3. Ponti, L., Gutierrez, A. P., Giannakopoulos, C., Varotsos, K. V., López Nevado, J., López Feria, S., Rivas González, F. W., Caboni, F., Stocchino, F., Rosati, A., Marchionni, D., Cure, J. R., Rodríguez, D., Terrado, M., De Felice, M., Dell’Aquila, A., Calmanti, S., Arjona, R., & Sanderson, M. (2024). Prospective regional analysis of olive and olive fly in Andalusia under climate change using physiologically based demographic modeling powered by cloud computing. Climate Services, 34, 100455. <https://doi.org/10.1016/j.cliser.2024.100455> (Open Access)
 
 
-4. Ponti, L., Gutierrez, A. P., Metz, M., Haas, J., Panzenböck, E., Neteler, M., Baldacchino, F., Ambrico, A., Baviello, G., Calvitti, M., Dell’Aquila, A., Calmanti, S., Lampazzi, E., Miceli, V., Cuna, D., Stocchino, F., & Carroccio, D. (2024, May 29). Realistic daily dynamics of olive and olive fly at 250 m resolution using cloud-gap-filled canopy temperature data from MODIS LST calibrated with MODIS NDVI. Super-Resolution and Downscaling for EO and Earth Science (SUREDOS24), 29-31 May 2024, ESA-ESRIN, Frascati, Italy, <https://suredos24.esa.int/>, Frascati, Italy. <https://doi.org/10.5281/zenodo.11374208>
+4. Ponti, L., Gutierrez, A. P., Metz, M., Haas, J., Panzenböck, E., Neteler, M., Baldacchino, F., Ambrico, A., Baviello, G., Calvitti, M., Dell’Aquila, A., Calmanti, S., Lampazzi, E., Miceli, V., Cuna, D., Stocchino, F., & Carroccio, D. (2024, May 29). Realistic daily dynamics of olive and olive fly at 250 m resolution using cloud-gap-filled canopy temperature data from MODIS LST calibrated with MODIS NDVI. Super-Resolution and Downscaling for EO and Earth Science (SUREDOS24), 29-31 May 2024, ESA-ESRIN, Frascati, Italy, <https://suredos24.esa.int/>, Frascati, Italy. <https://doi.org/10.5281/zenodo.11374208> (Open Access)
 
 For further information, please contact Luigi Ponti (<luigi.ponti@enea.it>)
 
