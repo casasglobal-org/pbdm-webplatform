@@ -31,7 +31,7 @@ RUN python3 --version
 
 RUN \
     apk -Uuv add groff less python3 py-pip && \
-    pip install six \
+    pip install six && \
     pip install awscli && \
     rm /var/cache/apk/*
 
