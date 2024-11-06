@@ -1,21 +1,19 @@
+import os
 import cdsapi
 import datetime
 import calendar
-import os
 import boto3
 import logging
-import shutil
 import zipfile
-import subprocess
 import xarray as xr
 import json
 
-# Configuration of the logger for monitoring execution
+# Configurazione del logger
 logger = logging.getLogger()
-logger.setLevel("INFO")
+logger.setLevel(logging.INFO)
 
 def ensure_directory_exists(directory_path):
-    """Ensure the directory exists to avoid FileNotFoundError."""
+    """Assicura che la directory esista per evitare FileNotFoundError."""
     os.makedirs(directory_path, exist_ok=True)
     os.chmod(directory_path, 0o775)
 
@@ -29,7 +27,7 @@ def download_and_extract(client, variable, year, month_str, days, label, s3_buck
         'day': days
     }
 
-    # Handling of specific_params based on the variable
+    # Gestione dei parametri specifici in base alla variabile
     if variable == '2m_relative_humidity':
         return process_humidity(client, common_params, year, month_str, label, s3_bucket)
 
@@ -41,14 +39,15 @@ def process_humidity(client, common_params, year, month_str, label, s3_bucket):
     
     for time in times:
         try:
+            # Modifica qui per ottenere il formato desiderato
             formatted_time = time.split('_')[0] + 'h'
             extract_to = f"/tmp/{label}-2m-{formatted_time}"
-            ensure_directory_exists(extract_to)  # Ensure directory exists
-            file_name = f"{extract_to}-{year}-{month_str}.zip"
+            ensure_directory_exists(extract_to)
+            zip_file = f"{extract_to}/{year}-{month_str}.zip"
             specific_params = {'time': time}
             response = client.retrieve('sis-agrometeorological-indicators', {**common_params, **specific_params})
-            response.download(target=file_name)
-            extract_files(file_name, extract_to)
+            response.download(target=zip_file)
+            extract_files(zip_file, extract_to)
             output_file_path = merge_nc_files(extract_to, output_filename=f"{label}-2m-{formatted_time}-{year}-{month_str}-merged.nc")
             upload_to_s3(output_file_path, s3_bucket, year, label, formatted_time)
             logger.info(f"Successfully processed and extracted 2m_relative_humidity for {month_str}-{year} at {formatted_time}")
@@ -65,15 +64,15 @@ def extract_files(zip_path, extract_to):
 
 def merge_nc_files(extract_to, output_filename):
     """
-    Tenta di replicare la funzionalità cdo mergetime unendo i file .nc lungo la dimensione temporale.
+    Unisce i file .nc lungo la dimensione temporale.
 
     :param extract_to: Directory che contiene i file .nc da unire.
     :param output_filename: Nome del file .nc risultante dal merge.
     """
-    # Costruisci il percorso completo del file di output
+    # Costruisce il percorso completo del file di output
     output_file_path = os.path.join(extract_to, output_filename)
     
-    # Raccogli tutti i file .nc nella directory specificata
+    # Raccoglie tutti i file .nc nella directory specificata
     nc_files = sorted([os.path.join(extract_to, f) for f in os.listdir(extract_to) if f.endswith('.nc')])
     
     if not nc_files:
@@ -84,10 +83,10 @@ def merge_nc_files(extract_to, output_filename):
 
     try:
         # Apre i dataset individualmente
-        datasets = [xr.open_dataset(nc_file, engine='netcdf4') for nc_file in nc_files]
+        datasets = [xr.open_dataset(nc_file) for nc_file in nc_files]
         
         # Concatena i dataset lungo la dimensione temporale
-        combined_ds = xr.concat(datasets, dim='time', data_vars='minimal', coords='minimal', compat='override')
+        combined_ds = xr.concat(datasets, dim='time')
         
         # Salva il dataset combinato come un nuovo file .nc
         combined_ds.to_netcdf(output_file_path)
@@ -95,7 +94,6 @@ def merge_nc_files(extract_to, output_filename):
         logger.info(f"Files merged successfully into {output_file_path}")
     except Exception as e:
         logger.error(f"Failed to merge .nc files with xarray: {e}")
-        # Assicurati di rilanciare l'eccezione per segnalare il fallimento
         raise
     finally:
         # Assicura la chiusura di tutti i dataset aperti
@@ -106,13 +104,13 @@ def merge_nc_files(extract_to, output_filename):
 
 def upload_to_s3(output_file_path, s3_bucket, year, label, formatted_time):
     """
-    Uploads the specified file to an S3 bucket.
+    Carica il file specificato su un bucket S3.
 
     :param output_file_path: Path del file da caricare.
-    :param bucket_name: Nome del bucket S3 dove caricare il file.
+    :param s3_bucket: Nome del bucket S3 dove caricare il file.
     :param year: Anno da usare nella struttura della chiave S3.
-    :param month_str: Mese da usare nella struttura della chiave S3.
-    :param file_label: Etichetta da usare nella struttura della chiave S3.
+    :param label: Etichetta da usare nella struttura della chiave S3.
+    :param formatted_time: Orario formattato da usare nella struttura della chiave S3.
     """
     s3 = boto3.client('s3')
     file_name = os.path.basename(output_file_path)
@@ -125,10 +123,12 @@ def upload_to_s3(output_file_path, s3_bucket, year, label, formatted_time):
         logger.error(f"Failed to upload {file_name} to S3: {e}")
 
 def lambda_handler(event, context):
-    api_key = os.getenv('CDS_API_KEY')
-    api_url = os.getenv('CDS_API_URL')
-    s3_bucket = os.getenv('S3_BUCKET_NAME')
-    client = cdsapi.Client(url=api_url, key=api_key)
+    # URL e API Key per l'accesso al servizio Copernicus
+    url = os.environ.get('CDS_API_URL', 'https://cds.climate.copernicus.eu/api')  # URL di default se non impostato
+    key = os.environ.get('CDS_API_KEY')  # Assicurati di impostare questa variabile d'ambiente
+    s3_bucket = os.environ.get('S3_BUCKET_NAME')  # Assicurati di impostare questa variabile d'ambiente
+
+    client = cdsapi.Client(url=url, key=key)
 
     try:
         today = datetime.date.today()
@@ -148,14 +148,13 @@ def lambda_handler(event, context):
         summary = f"Processing completed with {success_count} successes and {error_count} errors."
         logger.info(summary)
         
-        # Modifica qui per corrispondere alla struttura di output attesa dalla State Machine
         status_code = 200 if error_count == 0 else 500
         status_message = "SUCCESS" if error_count == 0 else "FAILURE"
 
         # Restituisce la risposta
         return {
             "statusCode": status_code,
-            "body": json.dumps({  # Usa json.dumps per serializzare il dizionario in una stringa JSON
+            "body": json.dumps({
                 "Payload": {
                     "Status": status_message,
                     "Message": summary
@@ -164,10 +163,10 @@ def lambda_handler(event, context):
         }
 
     except Exception as e:
-        logger.error(f"Unhandled exception: {e}")
+        logger.error(f"Unhandled exception: {e}", exc_info=True)
         return {
             "statusCode": 500,
-            "body": json.dumps({  # Usa json.dumps per serializzare il dizionario in una stringa JSON
+            "body": json.dumps({
                 "Payload": {
                     "Status": "FAILURE",
                     "Message": f"An error occurred: {str(e)}"
