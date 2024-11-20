@@ -41,6 +41,7 @@ def polling():
   global coords_file
   global PATH
   print(os.getcwd())
+  volume = os.environ['volume']
   end_date = os.environ['end_date']
   start_date = os.environ['start_date']
   country = os.environ['country'].replace("-250m", "").replace("-1km", "")
@@ -89,23 +90,27 @@ def polling():
     for file in list_files:
       print("file: ", file)
       # launch command like this -> wine olive_no-w olive.ini 01/01/1990 01/01/2000 file.txt
-      cmdCommand ='wine {} {} {} {} {} {}'.format('{}.exe'.format(model), '{}.ini'.format(model), ' {} {} {} '.format(str(start_date.month), str(start_date.day), str(start_date.year)),' {} {} {} '.format(str(end_date.month), str(end_date.day), str(end_date.year)),otinterval, "."+PATH+file)     #specify your cmd command
+      cmdCommand ='wine {} {} {} {} {} {}'.format('{}.exe'.format(model), '{}.ini'.format(model), ' {} {} {} '.format(str(start_date.month), str(start_date.day), str(start_date.year)),' {} {} {} '.format(str(end_date.month), str(end_date.day), str(end_date.year)),otinterval, "./txtfiles/"+file)     #specify your cmd command
       print(cmdCommand)
+      print(cwd)
+      process = subprocess.Popen(cmdCommand.split(), stdout=subprocess.PIPE)
+      process.wait()
       process = subprocess.Popen(cmdCommand.split(), stdout=subprocess.PIPE)
       process.wait()
       process = subprocess.Popen(cmdCommand.split(), stdout=subprocess.PIPE)
       process.wait()
       i = i + 1
-      fd = os.rename('OliveDaily.txt', 'OliveDaily{}.txt'.format(i))
-      s = s + 'OliveDaily{}.txt'.format(i)
+      print(cwd)
+      fd = os.rename(f'./{model}Daily.txt', './{}Daily{}.txt'.format(model,i))
+      s = s + '{}Daily{}.txt'.format(model,i)
            
     os.makedirs(cwd+DAILY_PATH, exist_ok=True)
-    os.system('type {} > OliveDaily.txt'.format(s))
+    os.system('type {} > {}Daily.txt'.format(model,s))
     for f in os.listdir(cwd):
-      if f.startswith("OliveDaily") or f.startswith("OliveSummaries"):
+      if f.startswith(f"{model}Daily") or f.startswith(f"{model}Summaries"):
           os.rename(f, cwd+DAILY_PATH+f)
       print(str(datetime.date.today().strftime('%d')))
-      if f.startswith("Olive_" + str(datetime.date.today().strftime('%d'))) or f.startswith('Gis'):
+      if f.startswith(f"{model}_" + str(datetime.date.today().strftime('%d'))) or f.startswith('Gis'):
         if not os.path.isfile(cwd+DAILY_PATH+f):
           os.rename(f, cwd+DAILY_PATH+f)
     # os.chmod(cwd+DAILY_PATH, 777)
@@ -114,7 +119,7 @@ def polling():
     #     myzip.write(cwd+DAILY_PATH+file, file)
     # VERIFICA SE NECESSARIO RIMUOVERE I FILE 
   except Exception as e:
-    raise e
+    print(e)
 
 if __name__ == "__main__":
   polling()

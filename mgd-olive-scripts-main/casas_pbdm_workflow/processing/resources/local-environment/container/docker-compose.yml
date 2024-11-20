@@ -15,5 +15,6 @@ services:
       dataset: ${DATASET}
       output_time_interval: ${OUTPUT_TIME_INTERVAL}
       resolution: ${RESOLUTION}
+      volume: ${VOLUME}
     volumes:
       - ${VOLUME}:/filesystem/pbdm/
