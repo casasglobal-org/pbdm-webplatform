@@ -82,7 +82,7 @@ In order to launch docker container locally you have to install Docker Desktop.
 Then, you have to run the following commands:
 
 ```
-cd mgd-olive-scripts-main/casas_pbdm_workflow/processing/resources/worker-container
+cd mgd-olive-scripts-main/casas_pbdm_workflow/processing/resources/local-environment/container
 docker build -t app . 
 docker compose up --no-deps -d app
 ```
