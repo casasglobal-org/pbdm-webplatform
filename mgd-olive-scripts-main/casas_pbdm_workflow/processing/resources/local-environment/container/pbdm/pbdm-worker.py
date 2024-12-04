@@ -97,8 +97,6 @@ def polling():
       process.wait()
       process = subprocess.Popen(cmdCommand.split(), stdout=subprocess.PIPE)
       process.wait()
-      process = subprocess.Popen(cmdCommand.split(), stdout=subprocess.PIPE)
-      process.wait()
       i = i + 1
       print(cwd)
       fd = os.rename(f'./{model}Daily.txt', './{}Daily{}.txt'.format(model,i))
