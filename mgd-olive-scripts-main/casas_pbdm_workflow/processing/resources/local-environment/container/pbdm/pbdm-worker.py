@@ -86,8 +86,8 @@ def polling():
     print(list_files)
     #for each file on output folder
     i = 0
-    s = ""
     for file in list_files:
+      s = ""
       print("file: ", file)
       # launch command like this -> wine olive_no-w olive.ini 01/01/1990 01/01/2000 file.txt
       cmdCommand ='wine {} {} {} {} {} {}'.format('{}.exe'.format(model), '{}.ini'.format(model), ' {} {} {} '.format(str(start_date.month), str(start_date.day), str(start_date.year)),' {} {} {} '.format(str(end_date.month), str(end_date.day), str(end_date.year)),otinterval, "./txtfiles/"+file)     #specify your cmd command
@@ -99,8 +99,8 @@ def polling():
       process.wait()
       i = i + 1
       print(cwd)
-      fd = os.rename(f'./{model}Daily.txt', './{}Daily{}.txt'.format(model,i))
-      s = s + '{}Daily{}.txt'.format(model,i)
+      # fd = os.rename(f'./{model}Daily.txt', './{}Daily{}.txt'.format(model,i))
+      # s = s + '{}Daily{}.txt'.format(model,i)
            
     os.makedirs(cwd+DAILY_PATH, exist_ok=True)
     os.system('type {} > {}Daily.txt'.format(model,s))
