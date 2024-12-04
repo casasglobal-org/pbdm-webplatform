@@ -93,8 +93,9 @@ def polling():
       cmdCommand ='wine {} {} {} {} {} {}'.format('{}.exe'.format(model), '{}.ini'.format(model), ' {} {} {} '.format(str(start_date.month), str(start_date.day), str(start_date.year)),' {} {} {} '.format(str(end_date.month), str(end_date.day), str(end_date.year)),otinterval, "./txtfiles/"+file)     #specify your cmd command
       print(cmdCommand)
       print(cwd)
-      process = subprocess.Popen(cmdCommand.split(), stdout=subprocess.PIPE)
-      process.wait()
+      if i == 1:
+        process = subprocess.Popen(cmdCommand.split(), stdout=subprocess.PIPE)
+        process.wait()
       process = subprocess.Popen(cmdCommand.split(), stdout=subprocess.PIPE)
       process.wait()
       i = i + 1
