@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block head %}
+<link href="{% static 'webcss/ol.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+
+<div class="product-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 mb-5 mb-md-0 text-center">
+                <form method="POST" class="post-form">
+                    {% csrf_token %}
+                    {% for field in formset %}
+                    <div class="form-group">
+                       {{ field.label }} {{ field }}
+                    </div>
+                    {% endfor %}
+                    <input type="submit" value="Submit">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block footerhead %}
+<script src="{% static 'webjs/ol.js' %}"></script>
+{% endblock %}

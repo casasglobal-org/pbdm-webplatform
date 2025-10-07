@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+
+<div class="product-section">
+    <div class="container">
+        <div class="row">
+
+            <div class="col-12 col-md-6 mb-5 mb-md-0 text-center">
+                <span class="icon-cross">
+                    <img src="{% static 'webimg/logo.png' %}" class="img-fluid" width="50%">
+                </span>
+            </div>
+            <div class="col-12 col-md-6 mb-5 mb-md-0">
+                <h4 class="mb-4 section-title">Center for Analysis of Sustainable Agro-ecological Systems</h4>
+                <p class="mb-4">
+                    {% blocktrans %}CASAS is a global nonprofit organization dedicated to analyzing issues in diverse crops, rangelands and medical and veterinary vectors to benefit populations and governments in developing countries worldwide. {% endblocktrans %}
+                </p>
+                <p>
+                    {% blocktrans %}Our comprehensive, ecosystem-level analyses allow donor organizations and international agencies to more effectively focus limited resources on solutions to critical problems of food production and environmental, human and veterinary health. {% endblocktrans %}
+                </p>
+                <p> {% blocktrans %} {% endblocktrans %}</p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
