@@ -100,3 +100,10 @@ ul.nobull {
 .pt-10 {
   padding-top: 10rem !important;
 }
+
+#returnText {
+  padding-top: 5vh;
+  padding-bottom: 3vh;
+  padding-left: 1vw;
+  padding-right: 0.5vw;
+}

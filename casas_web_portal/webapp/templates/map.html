@@ -2,10 +2,215 @@
 {% load i18n %}
 {% load static %}
 
+{% block head %}
+
+<script type="text/javascript">
+
+    window.drf_token = "{{ user.token.pk }}"
+
+</script>
+
+<link rel="stylesheet" href="{% static 'webcss/ol.css' %}" type="text/css">
+<style>
+  #map {
+    top: 0;
+    bottom: 0;
+    width: 98%;
+    height: 600px;
+  }
+  #mainrow {
+    padding-top: 1vh;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 
-    <div class="container">
-        CONTENT HERE
+    <div>
+        <div class="row" id="mainrow">
+            <nav id="sidebarMenu" class="col-md-4 bg-light px-4 py-3">
+                <div class="card">
+                    <div class="card-header" id="headingOne">
+                        <h5 class="mb-0">
+                        <button class="btn btn-accordion" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                            Layers
+                        </button>
+                        </h5>
+                    </div>
+                    <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-bs-parent="#sidebarMenu">
+                        <div class="card-body left">
+                        <h5 class="card-title text-center">Base layers</h5>
+                        <input type="radio" name="baselayer" value="osm" checked="true"><label for="osm">OpenStreetMap</label><br>
+                        <input type="radio" name="baselayer" value="sen2"><label for="sen2">Sentinel-2 cloudless</label><br>
+                        <br>
+                        <h5 class="card-title text-center">Overlay layers</h5>
+                        <input type="checkbox" name="overlay" value="boundaries" id="checkbounds"><label for="boundaries">World boundaries</label><br>
+                        <input type="checkbox" name="overlay" value="myareas" id="checkareas"><label for="myareas">Your analysis</label><br>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header" id="headingArea">
+                        <h5 class="mb-0">
+                            <button class="btn btn-accordion" type="button" data-bs-toggle="collapse" data-bs-target="#collapseArea" aria-expanded="false" aria-controls="collapseArea">
+                                Select existing areas
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="collapseArea" class="collapse" aria-labelledby="headingArea" data-bs-parent="#sidebarMenu">
+                        <div class="card-body">
+                            {% if user.is_authenticated %}
+                            <div>You are authenticated so you can view public and your private jobs</div>
+                            {% else %}
+                            <div>You are not authenticated so you can view only public jobs</div>
+                            {% endif %}
+                            <select name="area" id="areaSelect" class="btn btn-primary">
+                                <option value="noarea" id="noarea">Select an area</option>
+
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {% if user.is_authenticated %}
+                <div class="card">
+                    <div class="card-header" id="headingTwo">
+                        <button class="btn btn-accordion" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            Add new
+                        </button>
+                    </div>
+                    <div id="collapseTwo" class="collapse text-center" aria-labelledby="headingTwo" data-bs-parent="#sidebarMenu">
+                        <ul class="nobull">
+                            <li>
+                                <button type="button" class="btn btn-primary m-1"  data-bs-toggle="button" autocomplete="off" id="addarea" title="Draw a new area">
+                                    <i class="fas fa-map-marked"> Draw new area</i>
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" class="btn btn-primary m-1" data-bs-toggle="modal" data-bs-target="#addLayer" title="Add new area from vector layer" id="addlayerbtn">
+                                    <i class="fas fa-layer-group"> Add new area from vector layer</i>
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="modal fade" id="startDrawModal" tabindex="-1" role="dialog" aria-labelledby="startDrawModalLabel" aria-hidden="true">
+							<div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="startDrawModalLabel">Digitized feature</h5>
+                                    </div>
+                                    <div class="modal-body">
+                                        You can start to draw a polygon in the map.
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary close" data-bs-dismiss="modal" aria-label="Ok">Ok</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+						<div class="modal fade" id="drawModal" tabindex="-1" role="dialog" aria-labelledby="drawModalLabel" aria-hidden="true">
+							<div class="modal-dialog" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="drawModalLabel">Digitized feature</h5>
+									<button type="button" class="close btn btn-primary" data-bs-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+									</button>
+								</div>
+
+                                <form method="POST" class="post-form" id="addFeatureForm">
+                                    {% csrf_token %}
+								    <div class="modal-body">
+                                        {% for field in formset %}
+                                        {% if field.label == 'Geom' %}
+                                        <input type="hidden" id="id_geom" name="geom" value=""/>
+                                        {% elif field.label == 'User' %}
+                                        <input type="hidden" id="id_user" name="user" value="{{ user.id }}"/>
+                                        {% elif field.label == 'Is public' %}
+                                        <div class="form-group">
+                                            Is public
+                                            <input id="id_is_public" type="checkbox" name="is_public" aria-describedby="id_is_public_helptext" />
+                                        </div>
+                                        {% elif field.label not in 'Started,Ended '%}
+                                        <div class="form-group">
+                                            {{ field.label }} {{ field }}
+                                        </div>
+                                        {% endif %}
+                                        {% endfor %}
+
+								    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary close" data-bs-dismiss="modal" aria-label="Close">Close</button>
+                                        <!-- <input class="btn btn-primary" type="submit" value="Submit"> -->
+                                        <button type="button" class="btn btn-primary" onclick="addFeature()">Load data</button>
+                                    </div>
+                                </form>
+							</div>
+							</div>
+						</div>
+
+
+						<div class="modal fade" id="addLayer" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
+							<div class="modal-dialog" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="addModalLabel">Add new area</h5>
+									<button type="button" class="close btn btn-primary" data-bs-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+									</button>
+								</div>
+                                <form method="POST" class="post-form" id="addLayerForm">
+                                    {% csrf_token %}
+								    <div class="modal-body" id="addLayerForm">
+                                        <label class="form-label" for="customFile">Upload vector layer (KML/Geojson)</label>
+									    <input type="file" class="form-control" id="customFile" onchange="readFile(this)"/><br>
+                                        {% for field in formset %}
+                                        {% if field.label == 'Geom' %}
+                                        <input type="hidden" id="id_geom" name="geom" value=""/>
+                                        {% elif field.label == 'User' %}
+                                        <input type="hidden" id="id_user" name="user" value="{{ user.id }}"/>
+                                        {% elif field.label == 'Is public' %}
+                                        <div class="form-group">
+                                            Is public
+                                            <input id="id_is_public" type="checkbox" name="is_public" aria-describedby="id_is_public_helptext" />
+                                        </div>
+                                        {% elif field.label not in 'Started,Ended '%}
+                                        <div class="form-group">
+                                            {{ field.label }} {{ field }}
+                                        </div>
+                                        {% endif %}
+                                        {% endfor %}
+
+								    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary close" data-bs-dismiss="modal" aria-label="Close">Close</button>
+									    <button type="button" class="btn btn-primary" onclick="addLayer()">Load data</button>
+                                    </div>
+                                </form>
+							</div>
+							</div>
+						</div>
+                    </div>
+                </div>
+                {% endif %}
+            </nav>
+            <div class="col-md-8">
+                <div id="map">
+                </div>
+                <div id="popup" class="ol-popup">
+                    <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+                    <div id="popup-content"></div>
+                </div>
+            </div>
+        </div>
     </div>
+
+{% endblock %}
+
+{% block footerhead %}
+<script src="{% static 'webjs/ol.js' %}" type="text/javascript"></script>
+<script src="{% static 'webjs/map.js' %}" type="text/javascript"></script>
 
 {% endblock %}
