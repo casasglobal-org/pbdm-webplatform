@@ -46,14 +46,40 @@
 
 				<div class="collapse navbar-collapse" id="navbarsFurni">
 					<ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
-						<li class="nav-item active">
-							<a class="nav-link" href="/webapp/">HOME</a>
+						<li class="nav-item">
+							<a href="/">
+								<button type="button" class="btn btn-primary float-end m-1" title="Home">
+									<i class="fas fa-house"></i>
+								</button>
+							</a>
 						</li>
 						<li>
-							<a class="nav-link" href="map">{% trans "MAP" %}</a>
+							<a href="/map">
+								<button type="button" class="btn btn-primary float-end m-1" title="Map">
+									<i class="fas fa-map"></i>
+								</button>
+							</a>
 						</li>
-						<li><a class="nav-link" href="add">{% trans "ADD NEW" %}</a></li>
-					</ul>
+
+						{% if user.is_authenticated %}
+						<li>
+							<form action="{% url 'logout' %}" method="post">
+								{% csrf_token %}
+								<button type="submit" class="btn btn-primary float-end m-1" title="Logout">
+									<i class="fas fa-sign-out-alt"></i>
+								</button>
+							</form>
+						</li>
+						{% else %}
+						<li>
+							<a href="{% url 'login' %}">
+								<button type="button" class="btn btn-primary float-end m-1" title="Login">
+									<i class="fas fa-sign-in-alt"></i>
+								</button>
+							</a>
+						</li>
+						{% endif %}
+		  			</ul>
 					<!-- UNCOMMENT THIS TO ADD MULTILANGUAGE
 					<div class="nav-item dropdown">
 						<a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" data-i18n="navlang"></a>
@@ -64,6 +90,19 @@
 						</div>
 					</div>
 					-->
+				</div>
+			</div>
+			<div class="modal fade" id="returnModal" tabindex="-1" role="dialog" aria-labelledby="returnModalLabel" aria-hidden="true">
+			  	<div class="modal-dialog" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="returnModalLabel">CASAS web platform</h5>
+							<button type="button" class="close btn btn-primary" data-bs-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div id="returnText"></div>
+					</div>
 				</div>
 			</div>
 
@@ -80,9 +119,9 @@
 						</div>
 					</div>
 					<div class="col-lg-7">
-						<div class="hero-img-wrap">
+						<!-- <div class="hero-img-wrap">
 							<img src="{% static 'webimg/client-field.png' %}" class="img-fluid hedear-img">
-						</div>
+						</div> -->
 					</div>
 				</div>
 			</div>
@@ -115,8 +154,8 @@
 
 						<div class="col-12 col-md-4 text-center text-lg-end">
 							<ul class="list-unstyled d-inline-flex ms-auto">
-								<li class="me-4"><a href="credits">{% trans "Credits" %}</a></li>
-								<li class="me-4"><a href="termofuse">{% trans "Term of use" %}</a></li>
+								<li class="me-4"><a href="/credits">{% trans "Credits" %}</a></li>
+								<li class="me-4"><a href="/termofuse">{% trans "Term of use" %}</a></li>
 							</ul>
 						</div>
 
@@ -128,6 +167,7 @@
 		<!-- End Footer Section -->
 
 		<script src="{% static 'webjs/bootstrap.bundle.min.js' %}"></script>
+		<script src="{% static 'webjs/jquery-3.7.1.min.js.js' %}"></script>
 		<script src="{% static 'webjs/tiny-slider.js' %}"></script>
 		<script src="{% static 'webjs/custom.js' %}"></script>
         {% block footerhead %}{% endblock %}

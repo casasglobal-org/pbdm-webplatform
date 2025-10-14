@@ -22,14 +22,16 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
-
+from rest_framework.authtoken import views as token_views
 from webapi.urls import router
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("accounts/", include("django.contrib.auth.urls")),
     path("", include("webapp.urls")),
     path("api/auth/", include("rest_framework.urls")),
+    path("api/token-auth/", token_views.obtain_auth_token),
     path("api/v1/", include(router.urls)),
     path("api/v1/schema/", SpectacularAPIView.as_view(), name="schema"),
     # Optional UI:
@@ -43,5 +45,4 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
-
 ]
