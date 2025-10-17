@@ -134,3 +134,5 @@ dmypy.json
 # vscode container info
 .devcontainer/
 
+# docker env file
+docker/casas.env
