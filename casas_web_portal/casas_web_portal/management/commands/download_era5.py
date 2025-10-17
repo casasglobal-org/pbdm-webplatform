@@ -10,11 +10,16 @@ logger.setLevel(logging.DEBUG)
 class Command(BaseCommand):
     """_summary_"""
 
+    help = "download ERA5 data for one year"
+
     def add_arguments(self, parser):
         parser.add_argument("year", type=int)
 
     def handle(self, *args, **options):
-        start_date = f"{options['year']}-01-01"
-        end_date = f"{options['year']}-12-31"
-        logger.info(f"Download ERA5 data for {options['year']}")
+        year = options["year"]
+        if not year:
+            self.print_help()
+        start_date = f"{year}-01-01"
+        end_date = f"{year}-12-31"
+        logger.info(f"Download ERA5 data for {year}")
         download_all(start_date, end_date)
