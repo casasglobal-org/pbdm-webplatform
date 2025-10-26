@@ -6,6 +6,8 @@ from functools import reduce
 import glob
 import rioxarray
 import xarray as xr
+import fiona
+from casas_web_portal import settings
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -316,13 +318,12 @@ def write_casas_files(outdir, data, basename="mpi_esm_lr_", country=None):
 
 
 def write_casas_txt(
-    geom, start, end, indir, outdir, provider="era5", outbase="mpi_esm_lr_"
+    list_coords, start, end, indir, outdir, provider="era5", outbase="mpi_esm_lr_"
 ):
     """Function to read NC files and write the txt file to be passed
 
     Args:
-        geom (obj): a list of dictionary with GeoJSON format polygon
-                     [{'type': 'Polygon', 'coordinates': [[[10, 45], [11, 46], [12, 45], [10, 45]]]}]
+        list_coords (list): a list of tuples with the coordinates [(lon, lat), (lon, lat),]
         start (obj): a string in 'YYYY-MM-DD' format or a date object
                      representing the start date
         end (obj): a string in 'YYYY-MM-DD' format or a date object
@@ -336,6 +337,7 @@ def write_casas_txt(
     start_date, end_date = start_end_dates(start, end)
     outfiles = []
     prov_var = f"{provider}_variable"
+    geom = None
     for year in range(start_date.year, end_date.year + 1):
         if year == start_date.year:
             start_month = start_date.month
@@ -356,7 +358,7 @@ def write_casas_txt(
             f'{VARIABLES["tmin"][provider]}_24_hour_minimum',
             f'{VARIABLES["tmin"][provider]}-{year}-merged.nc',
         )
-        tmin_nc = read_nc(tmin_file, geom, this_start, this_end)
+        tmin_nc = read_nc(tmin_file, geom, this_start, this_end, grid=False)
         print(f"Got tmin data")
         if provider == "era5":
             # conversion from K to C
@@ -366,7 +368,7 @@ def write_casas_txt(
             f'{VARIABLES["tmax"][provider]}_24_hour_maximum',
             f'{VARIABLES["tmax"][provider]}-{year}-merged.nc',
         )
-        tmax_nc = read_nc(tmax_file, geom, this_start, this_end)
+        tmax_nc = read_nc(tmax_file, geom, this_start, this_end, grid=False)
         print(f"Got tmax data")
         if provider == "era5":
             # conversion from K to C
@@ -376,14 +378,14 @@ def write_casas_txt(
             f'{VARIABLES["prec"][provider]}',
             f'{VARIABLES["prec"][provider]}-{year}-merged.nc',
         )
-        prec_nc = read_nc(prec_file, geom, this_start, this_end)
+        prec_nc = read_nc(prec_file, geom, this_start, this_end, grid=False)
         print(f"Got precip data")
         solar_file = os.path.join(
             indir,
             f'{VARIABLES["solar"][provider]}',
             f'{VARIABLES["solar"][provider]}-{year}-merged.nc',
         )
-        solar_nc = read_nc(solar_file, geom, this_start, this_end)
+        solar_nc = read_nc(solar_file, geom, this_start, this_end, grid=False)
         if provider == "era5":
             # conversion from J m^-2 day^-1 to W m^-2
             solar_nc = solar_nc / 86400
@@ -393,7 +395,7 @@ def write_casas_txt(
             f'{VARIABLES["wind"][provider]}_24_hour_mean',
             f'{VARIABLES["wind"][provider]}-{year}-merged.nc',
         )
-        wind_nc = read_nc(wind_file, geom, this_start, this_end)
+        wind_nc = read_nc(wind_file, geom, this_start, this_end, grid=False)
         print(f"Got wind data")
         humi_file = os.path.join(
             indir,
@@ -401,31 +403,54 @@ def write_casas_txt(
             # f'{VARIABLES["rel_humidity"][provider]}_06_00',
             f'{VARIABLES["rel_humidity"][provider]}-{year}-merged.nc',
         )
-        humi_nc = read_nc(humi_file, geom, this_start, this_end)
+        humi_nc = read_nc(humi_file, geom, this_start, this_end, grid=False)
         print(f"Got all data for year {year}, writing files")
 
-        for lon in prec_nc.lon:
-            for lat in prec_nc.lat:
-                coords = xr.Dataset(coords={"lon": lon, "lat": lat})
-                data = {"coords": {"x": coords.lon.values, "y": coords.lat.values}}
-                vals = prec_nc[VARIABLES["prec"][prov_var]].sel(lon=lon, lat=lat)
-                data["dates"] = vals.time.values
-                data["precip"] = vals.values
-                vals = tmax_nc[VARIABLES["tmax"][prov_var]].sel(lon=lon, lat=lat)
-                data["tmax"] = vals.values
-                vals = tmin_nc[VARIABLES["tmin"][prov_var]].sel(lon=lon, lat=lat)
-                data["tmin"] = vals.values
-                vals = solar_nc[VARIABLES["solar"][prov_var]].sel(lon=lon, lat=lat)
-                data["solar"] = vals.values
-                vals = wind_nc[VARIABLES["wind"][prov_var]].sel(lon=lon, lat=lat)
-                data["wind"] = vals.values
-                vals = humi_nc[VARIABLES["rel_humidity"][prov_var]].sel(
-                    lon=lon, lat=lat
-                )
-                data["rh"] = vals.values
-                outfile = write_casas_files(outdir, data, outbase)
-                if outfile not in outfiles:
-                    outfiles.append(outfile)
+        for coord in list_coords:
+            lon, lat = coord
+            coords = xr.Dataset(coords={"lon": lon, "lat": lat})
+            data = {"coords": {"x": coords.lon.values, "y": coords.lat.values}}
+            vals = prec_nc[VARIABLES["prec"][prov_var]].sel(lon=lon, lat=lat)
+            data["dates"] = vals.time.values
+            data["precip"] = vals.values
+            vals = tmax_nc[VARIABLES["tmax"][prov_var]].sel(lon=lon, lat=lat)
+            data["tmax"] = vals.values
+            vals = tmin_nc[VARIABLES["tmin"][prov_var]].sel(lon=lon, lat=lat)
+            data["tmin"] = vals.values
+            vals = solar_nc[VARIABLES["solar"][prov_var]].sel(lon=lon, lat=lat)
+            data["solar"] = vals.values
+            vals = wind_nc[VARIABLES["wind"][prov_var]].sel(lon=lon, lat=lat)
+            data["wind"] = vals.values
+            vals = humi_nc[VARIABLES["rel_humidity"][prov_var]].sel(lon=lon, lat=lat)
+            data["rh"] = vals.values
+            outfile = write_casas_files(outdir, data, outbase)
+            if outfile not in outfiles:
+                outfiles.append(outfile)
+    return outfiles
+
+
+def calculate_all_casas_txt_month(
+    year, indir, outdir, provider="era5", outbase="mpi_esm_lr_"
+):
+    """"""
+    list_coords = []
+    with fiona.open(
+        os.path.join(settings.STATIC_ROOT, "data", "{}_grid_land.fgb".format(provider))
+    ) as src:
+        for feature in src[:50]:
+            geom = feature["geometry"]
+            coords = geom["coordinates"]
+            list_coords.append(tuple(coords))
+    for month in range(1, 13):
+        print(f"Processing month {month} of year {year}")
+        start_date = date(year, month, 1)
+        if month == 12:
+            end_date = date(year, 12, 31)
+        else:
+            end_date = date(year, month + 1, 1) - timedelta(days=1)
+        outfiles = write_casas_txt(
+            list_coords, start_date, end_date, indir, outdir, provider, outbase
+        )
     return outfiles
 
 
@@ -435,7 +460,14 @@ def calculate_all_casas_txt(
     """"""
     start_date = date(year, 1, 1)
     end_date = date(year, 12, 31)
-    geom = None
+    list_coords = []
+    with fiona.open(
+        os.path.join(settings.STATIC_ROOT, "data", "{}_grid_land.fgb".format(provider))
+    ) as src:
+        for feature in src[:50]:
+            geom = feature["geometry"]
+            coords = geom["coordinates"]
+            list_coords.append(tuple(coords))
     outfiles = write_casas_txt(
         geom, start_date, end_date, indir, outdir, provider, outbase
     )

@@ -136,3 +136,6 @@ dmypy.json
 
 # docker env file
 docker/casas.env
+
+# static files
+casas_web_portal/staticfiles/
