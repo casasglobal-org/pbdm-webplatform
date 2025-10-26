@@ -410,18 +410,30 @@ def write_casas_txt(
             lon, lat = coord
             coords = xr.Dataset(coords={"lon": lon, "lat": lat})
             data = {"coords": {"x": coords.lon.values, "y": coords.lat.values}}
-            vals = prec_nc[VARIABLES["prec"][prov_var]].sel(lon=lon, lat=lat)
+            vals = prec_nc[VARIABLES["prec"][prov_var]].sel(
+                lon=lon, lat=lat, method="nearest"
+            )
             data["dates"] = vals.time.values
             data["precip"] = vals.values
-            vals = tmax_nc[VARIABLES["tmax"][prov_var]].sel(lon=lon, lat=lat)
+            vals = tmax_nc[VARIABLES["tmax"][prov_var]].sel(
+                lon=lon, lat=lat, method="nearest"
+            )
             data["tmax"] = vals.values
-            vals = tmin_nc[VARIABLES["tmin"][prov_var]].sel(lon=lon, lat=lat)
+            vals = tmin_nc[VARIABLES["tmin"][prov_var]].sel(
+                lon=lon, lat=lat, method="nearest"
+            )
             data["tmin"] = vals.values
-            vals = solar_nc[VARIABLES["solar"][prov_var]].sel(lon=lon, lat=lat)
+            vals = solar_nc[VARIABLES["solar"][prov_var]].sel(
+                lon=lon, lat=lat, method="nearest"
+            )
             data["solar"] = vals.values
-            vals = wind_nc[VARIABLES["wind"][prov_var]].sel(lon=lon, lat=lat)
+            vals = wind_nc[VARIABLES["wind"][prov_var]].sel(
+                lon=lon, lat=lat, method="nearest"
+            )
             data["wind"] = vals.values
-            vals = humi_nc[VARIABLES["rel_humidity"][prov_var]].sel(lon=lon, lat=lat)
+            vals = humi_nc[VARIABLES["rel_humidity"][prov_var]].sel(
+                lon=lon, lat=lat, method="nearest"
+            )
             data["rh"] = vals.values
             outfile = write_casas_files(outdir, data, outbase)
             if outfile not in outfiles:
