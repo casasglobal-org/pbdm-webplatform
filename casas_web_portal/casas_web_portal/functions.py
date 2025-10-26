@@ -82,7 +82,7 @@ def start_end_dates(start_date=None, end_date=None, delta_days=30):
         start = datetime.now() - timedelta(days=delta_days)
     elif isinstance(start_date, str):
         start = datetime.strptime(start_date, date_format)
-    elif isinstance(start_date, datetime):
+    elif isinstance(start_date, datetime) or isinstance(start_date, date):
         start = start_date
     else:
         raise ValueError(
@@ -93,7 +93,7 @@ def start_end_dates(start_date=None, end_date=None, delta_days=30):
         end = datetime.now()
     elif isinstance(end_date, str):
         end = datetime.strptime(end_date, date_format)
-    elif isinstance(end_date, datetime):
+    elif isinstance(end_date, datetime) or isinstance(end_date, date):
         end = end_date
     else:
         raise ValueError(
