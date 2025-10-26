@@ -3,6 +3,7 @@ asgiref==3.9.1
 attrs==25.3.0
 cdsapi==0.7.6
 certifi==2025.8.3
+cftime==1.6.5
 charset-normalizer==3.4.3
 click==8.2.1
 click-plugins==1.1.1.2
@@ -12,6 +13,7 @@ django-cors-headers==4.9.0
 djangorestframework==3.16.1
 drf-spectacular==0.28.0
 ecmwf-datastores-client==0.4.0
+fiona==1.10.1
 geopandas==1.1.1
 h5netcdf==1.6.4
 h5py==3.14.0
