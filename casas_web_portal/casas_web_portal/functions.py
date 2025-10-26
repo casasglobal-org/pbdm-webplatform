@@ -449,7 +449,7 @@ def calculate_all_casas_txt_month(
     with fiona.open(
         os.path.join(settings.STATIC_ROOT, "data", "{}_grid_land.fgb".format(provider))
     ) as src:
-        for feature in src[:50]:
+        for feature in src:
             geom = feature["geometry"]
             coords = geom["coordinates"]
             list_coords.append(tuple(coords))
@@ -476,7 +476,7 @@ def calculate_all_casas_txt(
     with fiona.open(
         os.path.join(settings.STATIC_ROOT, "data", "{}_grid_land.fgb".format(provider))
     ) as src:
-        for feature in src[:50]:
+        for feature in src:
             geom = feature["geometry"]
             coords = geom["coordinates"]
             list_coords.append(tuple(coords))
