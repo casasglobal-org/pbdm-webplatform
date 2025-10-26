@@ -17,13 +17,11 @@ class Command(BaseCommand):
         parser.add_argument("year", type=int)
         parser.add_argument(
             "--dir",
-            "dir",
             type=str,
             help="Directory containing 'data' and 'txt' folders",
         )
         parser.add_argument(
             "--base",
-            "base",
             type=str,
             help="Base name for output txt files",
             default="casas_era5_",
