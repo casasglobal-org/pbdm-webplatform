@@ -129,6 +129,19 @@ def days_range(start_date, end_date):
     return output
 
 
+def split(a, n):
+    """Function to split list in n even parts
+
+    Args:
+        a (list): the list to split
+        n (int): the number of parts
+    Returns:
+        list: a list of n lists
+    """
+    k, m = divmod(len(a), n)
+    return list((a[i * k + min(i, m) : (i + 1) * k + min(i + 1, m)] for i in range(n)))
+
+
 def merge_nc_files(extract_to, output_filename, pattern, remove=True):
     """Merge multiple .nc files in a directory into a single .nc file using xarray.
 
@@ -302,16 +315,20 @@ def write_casas_files(outdir, data, basename="mpi_esm_lr_", country=None):
     else:
         outname = f"{basename}_{data["coords"]["x"]}_{data["coords"]["y"]}.txt"
     outfile = os.path.join(outdir, outname)
-    with open(outfile, "w+") as f:
-        f.write(f"{outfile}\n")
-        f.write(f"{data["coords"]["x"]}\t{data["coords"]["y"]}\n")
-        f.write("MO\tDA\tYEAR\tTMAX\tTMIN\tSOL\tPRCP\tRH\tWIND\n")
+    if not os.path.exists(outfile):
+        with open(outfile, "w") as f:
+            f.write(f"{outfile}\n")
+            f.write(f"{data["coords"]["x"]}\t{data["coords"]["y"]}\n")
+            f.write("MO\tDA\tYEAR\tTMAX\tTMIN\tSOL\tPRCP\tRH\tWIND\n")
+
+    with open(outfile, "a+") as f:
         for i, mydate in enumerate(data["dates"]):
             split_date = str(mydate.astype("datetime64[D]")).split("-")
             line = (
                 f"{split_date[1]}\t{split_date[2]}\t{split_date[0]}\t"
-                f"{data["tmax"][i]}\t{data["tmin"][i]}\t{data["solar"][i]}\t"
-                f"{data["precip"][i]}\t{data["rh"][i]}\t{data["wind"][i]}\n"
+                f"{round(data["tmax"][i], 2)}\t{round(data["tmin"][i], 2)}\t"
+                f"{round(data["solar"][i], 2)}\t{round(data["precip"][i], 2)}"
+                f"\t{round(data["rh"][i], 2)}\t{round(data["wind"][i], 2)}\n"
             )
             f.write(line)
     return outfile
@@ -441,18 +458,36 @@ def write_casas_txt(
     return outfiles
 
 
-def calculate_all_casas_txt_month(
-    year, indir, outdir, provider="era5", outbase="mpi_esm_lr_"
-):
-    """"""
+def _read_file_for_coords(file_path, limit=None):
+    """Helper function to read a single file for specific coordinates.
+
+    Args:
+        file_path (str): Path to the data file.
+        limit (int, optional): Limit number of locations to process. Defaults to None.
+    Returns:
+        dict: Data list for the given coordinates.
+    """
     list_coords = []
-    with fiona.open(
-        os.path.join(settings.STATIC_ROOT, "data", "{}_grid_land.fgb".format(provider))
-    ) as src:
-        for feature in src:
+    with fiona.open(file_path) as src:
+        if limit:
+            features = list(src)[:limit]
+        else:
+            features = list(src)
+        for feature in features:
             geom = feature["geometry"]
             coords = geom["coordinates"]
             list_coords.append(tuple(coords))
+    return list_coords
+
+
+def calculate_all_casas_txt_month(
+    year, indir, outdir, provider="era5", outbase="mpi_esm_lr_", limit=None
+):
+    """"""
+    filepath = os.path.join(
+        settings.STATIC_ROOT, "data", "{}_grid_land.fgb".format(provider)
+    )
+    list_coords = _read_file_for_coords(filepath, limit=limit)
     for month in range(1, 13):
         print(f"Processing month {month} of year {year}")
         start_date = date(year, month, 1)
@@ -467,20 +502,20 @@ def calculate_all_casas_txt_month(
 
 
 def calculate_all_casas_txt(
-    year, indir, outdir, provider="era5", outbase="mpi_esm_lr_"
+    year, indir, outdir, provider="era5", outbase="mpi_esm_lr_", limit=None
 ):
     """"""
     start_date = date(year, 1, 1)
     end_date = date(year, 12, 31)
-    list_coords = []
-    with fiona.open(
-        os.path.join(settings.STATIC_ROOT, "data", "{}_grid_land.fgb".format(provider))
-    ) as src:
-        for feature in src:
-            geom = feature["geometry"]
-            coords = geom["coordinates"]
-            list_coords.append(tuple(coords))
+    list_coords = _read_file_for_coords(
+        os.path.join(settings.STATIC_ROOT, "data", "{}_grid_land.fgb".format(provider)),
+        limit=limit,
+    )
+    for feature in list_coords:
+        geom = feature["geometry"]
+        coords = geom["coordinates"]
+        list_coords.append(tuple(coords))
     outfiles = write_casas_txt(
-        geom, start_date, end_date, indir, outdir, provider, outbase
+        list_coords, start_date, end_date, indir, outdir, provider, outbase
     )
     return outfiles
