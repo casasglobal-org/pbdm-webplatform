@@ -1,8 +1,8 @@
-# NetCDF Grid Information and Extraction Tools
+# NetCDF Grid information and extraction tools
 
 Python tools to extract grid information and coordinates from NetCDF climate files. These tools replace the functionality of several R scripts used in the PBDM framework for extracting weather grids.
 
-## Tools Overview
+## Tools overview
 
 ### 1. `netcdf_grid_info.py`
 
@@ -104,7 +104,7 @@ Or using conda:
 conda install -c conda-forge xarray netCDF4 numpy
 ```
 
-### Requires GRASS GIS Installation
+### Requires GRASS GIS installation
 
 For macOS using Homebrew:
 
@@ -132,21 +132,21 @@ brew install grass
    # Follow commands in grass_gis_notes.sh
    ```
 
-## File Format Support
+## File format support
 
-### Input Formats
+### Input formats
 
 - AgERA5 NetCDF files
 - NASA NEX-GDDP-CMIP6 NetCDF files
 - Any CF-compliant NetCDF file with lat/lon coordinates
 
-### Output Formats
+### Output formats
 
 - Text files with grid information (`*.info.txt`)
 - Tab-separated coordinate files for GRASS GIS import
 - Variable statistics and summaries
 
-## Migration from R Scripts
+## Migration from R scripts
 
 These Python tools replace the following R scripts:
 
