@@ -51,7 +51,7 @@ class Command(BaseCommand):
         if not year:
             self.print_help()
         logger.info(f"Create txt ERA5 data for {year}")
-        if not options["monthly"]:
+        if options["monthly"]:
             calculate_all_casas_txt_month(
                 year, data_dir, txt_dir, outbase=options["base"], limit=options["limit"]
             )
