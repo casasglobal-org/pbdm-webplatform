@@ -1,7 +1,10 @@
 import logging
 import os
 from django.core.management.base import BaseCommand, CommandError
-from casas_web_portal.functions import calculate_all_casas_txt_month
+from casas_web_portal.functions import (
+    calculate_all_casas_txt_month,
+    calculate_all_casas_txt,
+)
 
 
 logger = logging.getLogger()
@@ -26,6 +29,17 @@ class Command(BaseCommand):
             help="Base name for output txt files",
             default="casas_era5_",
         )
+        parser.add_argument(
+            "--limit",
+            type=int,
+            help="Limit number of locations to process (for testing)",
+            default=None,
+        )
+        parser.add_argument(
+            "--monthly",
+            action="store_true",
+            help="Process data monthly instead of yearly",
+        )
 
     def handle(self, *args, **options):
         year = options["year"]
@@ -37,4 +51,9 @@ class Command(BaseCommand):
         if not year:
             self.print_help()
         logger.info(f"Create txt ERA5 data for {year}")
-        calculate_all_casas_txt_month(year, data_dir, txt_dir, outbase=options["base"])
+        if not options["monthly"]:
+            calculate_all_casas_txt_month(
+                year, data_dir, txt_dir, outbase=options["base"], limit=options["limit"]
+            )
+        else:
+            calculate_all_casas_txt(year, data_dir, txt_dir, outbase=options["base"])
