@@ -26,8 +26,8 @@ class Command(BaseCommand):
         parser.add_argument(
             "--base",
             type=str,
-            help="Base name for output txt files",
-            default="casas_era5_",
+            help="Base name for output txt files. Default: casas_era5",
+            default="casas_era5",
         )
         parser.add_argument(
             "--limit",
