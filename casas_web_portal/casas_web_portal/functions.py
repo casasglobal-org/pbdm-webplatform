@@ -2,7 +2,6 @@ import os
 import logging
 import calendar
 from datetime import date, datetime, timedelta
-from functools import reduce
 import glob
 import rioxarray
 import xarray as xr
@@ -129,7 +128,7 @@ def days_range(start_date, end_date):
     return output
 
 
-def split(a, n):
+def split_list(a, n):
     """Function to split list in n even parts
 
     Args:
@@ -235,7 +234,6 @@ def min_array(paths, geom, start, end, crs="EPSG:4326", grid=False):
     for path in paths:
         ncs.append(read_nc(path, geom, start, end, crs, grid))
     min_dataset = ncs[0].copy(deep=True)
-    # min_out = reduce(xr.ufuncs.minimum, ncs)
     stacked = xr.concat(ncs, dim="ensemble")  # o nome qualsiasi
     ds_min = stacked.min(dim="ensemble", skipna=True)
     for var in ncs[0].data_vars:
@@ -310,25 +308,25 @@ def write_casas_files(outdir, data, basename="mpi_esm_lr_", country=None):
     """
     if country:
         outname = (
-            f"{basename}_{data['coords']['x']}_{data['coords']['y']}_{country}.txt"
+            f"{basename}_{data['rowcol']['x']}_{data['rowcol']['y']}_{country}.txt"
         )
     else:
-        outname = f"{basename}_{data["coords"]["x"]}_{data["coords"]["y"]}.txt"
+        outname = f"{basename}_{data['rowcol']['x']}_{data['rowcol']['y']}.txt"
     outfile = os.path.join(outdir, outname)
     if not os.path.exists(outfile):
-        with open(outfile, "w") as f:
+        with gzip.open(outfile, "wt") as f:
             f.write(f"{outfile}\n")
             f.write(f"{data["coords"]["x"]}\t{data["coords"]["y"]}\n")
             f.write("MO\tDA\tYEAR\tTMAX\tTMIN\tSOL\tPRCP\tRH\tWIND\n")
 
-    with open(outfile, "a+") as f:
+    with gzip.open(outfile, "at") as f:
         for i, mydate in enumerate(data["dates"]):
             split_date = str(mydate.astype("datetime64[D]")).split("-")
             line = (
                 f"{split_date[1]}\t{split_date[2]}\t{split_date[0]}\t"
-                f"{round(data["tmax"][i], 2)}\t{round(data["tmin"][i], 2)}\t"
-                f"{round(data["solar"][i], 2)}\t{round(data["precip"][i], 2)}"
-                f"\t{round(data["rh"][i], 2)}\t{round(data["wind"][i], 2)}\n"
+                f"{data["tmax"][i]:.1f}\t{data["tmin"][i]:.1f}\t"
+                f"{data["solar"][i]:.1f}\t{data["precip"][i]:.1f}"
+                f"\t{data["rh"][i]:.1f}\t{data["wind"][i]:.1f}\n"
             )
             f.write(line)
     return outfile
@@ -424,9 +422,12 @@ def write_casas_txt(
         print(f"Got all data for year {year}, writing files")
 
         for coord in list_coords:
-            lon, lat = coord
+            lon, lat = coord["geom"]
             coords = xr.Dataset(coords={"lon": lon, "lat": lat})
-            data = {"coords": {"x": coords.lon.values, "y": coords.lat.values}}
+            data = {
+                "coords": {"x": coords.lon.values, "y": coords.lat.values},
+                "rowcol": {"x": coord["rowcol"][0], "y": coord["rowcol"][1]},
+            }
             vals = prec_nc[VARIABLES["prec"][prov_var]].sel(
                 lon=lon, lat=lat, method="nearest"
             )
@@ -476,7 +477,14 @@ def _read_file_for_coords(file_path, limit=None):
         for feature in features:
             geom = feature["geometry"]
             coords = geom["coordinates"]
-            list_coords.append(tuple(coords))
+            list_coords.append(
+                {
+                    "geom": tuple(coords),
+                    "rowcol": tuple(
+                        feature["properties"]["x"], feature["properties"]["y"]
+                    ),
+                }
+            )
     return list_coords
 
 
@@ -511,10 +519,6 @@ def calculate_all_casas_txt(
         os.path.join(settings.STATIC_ROOT, "data", "{}_grid_land.fgb".format(provider)),
         limit=limit,
     )
-    for feature in list_coords:
-        geom = feature["geometry"]
-        coords = geom["coordinates"]
-        list_coords.append(tuple(coords))
     outfiles = write_casas_txt(
         list_coords, start_date, end_date, indir, outdir, provider, outbase
     )
