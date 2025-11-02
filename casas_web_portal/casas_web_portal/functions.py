@@ -3,6 +3,7 @@ import logging
 import calendar
 from datetime import date, datetime, timedelta
 import glob
+import gzip
 import rioxarray
 import xarray as xr
 import fiona
@@ -308,15 +309,15 @@ def write_casas_files(outdir, data, basename="mpi_esm_lr_", country=None):
     """
     if country:
         outname = (
-            f"{basename}_{data['rowcol']['x']}_{data['rowcol']['y']}_{country}.txt"
+            f"{basename}_{data['rowcol']['x']}_{data['rowcol']['y']}_{country}.txt.gz"
         )
     else:
-        outname = f"{basename}_{data['rowcol']['x']}_{data['rowcol']['y']}.txt"
+        outname = f"{basename}_{data['rowcol']['x']}_{data['rowcol']['y']}.txt.gz"
     outfile = os.path.join(outdir, outname)
     if not os.path.exists(outfile):
         with gzip.open(outfile, "wt") as f:
             f.write(f"{outfile}\n")
-            f.write(f"{data["coords"]["x"]}\t{data["coords"]["y"]}\n")
+            f.write(f"{data['coords']['x']}\t{data['coords']['y']}\n")
             f.write("MO\tDA\tYEAR\tTMAX\tTMIN\tSOL\tPRCP\tRH\tWIND\n")
 
     with gzip.open(outfile, "at") as f:
@@ -324,9 +325,9 @@ def write_casas_files(outdir, data, basename="mpi_esm_lr_", country=None):
             split_date = str(mydate.astype("datetime64[D]")).split("-")
             line = (
                 f"{split_date[1]}\t{split_date[2]}\t{split_date[0]}\t"
-                f"{data["tmax"][i]:.1f}\t{data["tmin"][i]:.1f}\t"
-                f"{data["solar"][i]:.1f}\t{data["precip"][i]:.1f}"
-                f"\t{data["rh"][i]:.1f}\t{data["wind"][i]:.1f}\n"
+                f"{data['tmax'][i]:.1f}\t{data['tmin'][i]:.1f}\t"
+                f"{data['solar'][i]:.1f}\t{data['precip'][i]:.1f}"
+                f"\t{data['rh'][i]:.1f}\t{data['wind'][i]:.1f}\n"
             )
             f.write(line)
     return outfile
@@ -481,7 +482,7 @@ def _read_file_for_coords(file_path, limit=None):
                 {
                     "geom": tuple(coords),
                     "rowcol": tuple(
-                        feature["properties"]["x"], feature["properties"]["y"]
+                        [feature["properties"]["x"], feature["properties"]["y"]]
                     ),
                 }
             )
