@@ -8,6 +8,8 @@ import rioxarray
 import xarray as xr
 import fiona
 from casas_web_portal import settings
+from django.core.mail import send_mail
+from smtplib import SMTPException
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -58,6 +60,37 @@ VARIABLES = {
 }
 
 HUMI_TIMES = ["06_00", "09_00", "12_00", "15_00", "18_00"]
+
+
+def _send_mail(title, text, user):
+    """Send an email to the user.
+
+    Args:
+        title (str): The subject of the email.
+        text (str): The body of the email.
+        user (User): The user to send the email to.
+
+    Raises:
+        ValueError: If there is an error sending the email.
+
+    Returns:
+        bool: True if the email was sent successfully, False otherwise.
+    """
+    try:
+        sent = send_mail(
+            title,
+            text,
+            settings.EMAIL_HOST_USER,
+            [user.email, settings.EMAIL_HOST_USER],
+            fail_silently=False,
+        )
+    except SMTPException as err:
+        logger.error(f"Error sending email to user {user.username}: {err}")
+        raise ValueError(f"Error sending email to user {user.username}: {err}")
+    if sent == 0:
+        logger.error(f"Error sending email to user {user.username}")
+        raise ValueError(f"Error sending email to user {user.username}")
+    return True
 
 
 def start_end_dates(start_date=None, end_date=None, delta_days=30):
