@@ -31,6 +31,8 @@ services:
     restart: always
     volumes:
       - ./data:/opt/casas/
+    ports:
+      - "8080:8080"
     expose:
       - "8080"
     depends_on:
@@ -40,9 +42,10 @@ services:
       - casas.env
     networks:
       - internal
+      - default
     environment:
-      - VIRTUAL_HOST: ${APP_URL}
-      - VIRTUAL_PORT: 8080
+      - VIRTUAL_HOST=${APP_URL}
+      - VIRTUAL_PORT=8080
 
 
 volumes:
@@ -50,7 +53,8 @@ volumes:
   redis_data:
 
 networks:
+  default:
+    external: true
+    name: nginx-proxy-net
   internal:
     driver: bridge
-  external:
-    name: nginx-proxy-net
