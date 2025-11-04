@@ -40,23 +40,10 @@ services:
       - casas.env
     networks:
       - internal
+    environment:
+      - VIRTUAL_HOST: ${APP_URL}
+      - VIRTUAL_PORT: 8080
 
-  casas_nginx-reverseproxy:
-    image: docker.io/nginx:1.27
-    hostname: reverse-proxy
-    container_name: casas_nginx
-    ports:
-      - "443:443"
-    volumes:
-     - "./nginx/nginx.conf:/etc/nginx/conf.d/default.conf"
-     # This is the path to your SSL certificate and key
-     # Ensure these files exist and are correctly configured
-     #- "./nginx/cert_bundle.pem:/etc/ssl/private/cert_bundle.pem"
-     #- "./nginx/privateKey.pem:/etc/ssl/private/privateKey.pem"
-    networks:
-     - internal
-     - external
-    restart: always
 
 volumes:
   db_data:
@@ -66,3 +53,4 @@ networks:
   internal:
     driver: bridge
   external:
+    name: nginx-proxy-net

@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  nginx-proxy:
+    build: ./proxy
+    container_name: nginx-proxy
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - certs:/etc/nginx/certs:ro
+      - vhost.d:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+
+  letsencrypt-companion:
+    image: nginxproxy/acme-companion
+    restart: always
+    container_name: letsencrypt-companion
+    volumes:
+      - certs:/etc/nginx/certs
+      - acme:/etc/acme.sh
+      - vhost.d:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - DEFAULT_EMAIL=YOUR_EMAIL@SOMETHING.COM
+      - NGINX_PROXY_CONTAINER=nginx-proxy
+
+volumes:
+  certs:
+  acme:
+  vhost.d:
+  html:
+
+networks:
+  default:
+    external: true
+    name: nginx-proxy-net
