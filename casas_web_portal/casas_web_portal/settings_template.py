@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "drf_spectacular",
+    "huey.contrib.djhuey",
     "casas_web_portal",
     "preprocessing",
     "webapi",
@@ -124,6 +125,15 @@ USE_I18N = True
 USE_TZ = True
 
 
+# Coors
+CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
@@ -133,6 +143,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "webapp", "static"),
 ]
+
+MEDIA_ROOT = os.path.join(os.environ["APP_DATA_DIR"], "media")
+if not os.path.exists(MEDIA_ROOT):
+    os.makedirs(MEDIA_ROOT)
+MEDIA_URL = "/media/"
+ADMIN_MEDIA_PREFIX = "/static/admin/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -170,6 +186,36 @@ TXT_DIR = os.path.join(BASE_DIR, "..", "txt")
 if not os.path.exists(TXT_DIR):
     os.makedirs(TXT_DIR)
 
-# For production enable this and disable ALL_ORIGINS
-# CORS_ALLOWED_ORIGINS = []
-CORS_ALLOW_ALL_ORIGINS = True
+# Huey settings
+HUEY = {
+    "huey_class": "huey.RedisHuey",  # Huey implementation to use.
+    "name": DATABASES["default"]["NAME"],  # Use db name for huey.
+    "results": True,  # Store return values of tasks.
+    "store_none": False,  # If a task returns None, do not save to results.
+    "immediate": False,  # If DEBUG=True, run synchronously.
+    "utc": True,  # Use UTC for all times internally.
+    "blocking": True,  # Perform blocking pop rather than poll Redis.
+    "connection": {
+        "host": "redis",
+        "port": 6379,
+        "db": 0,
+        "connection_pool": None,  # Definitely you should use pooling!
+        # ... tons of other options, see redis-py for details.
+        # huey-specific connection parameters.
+        "read_timeout": 1,  # If not polling (blocking pop), use timeout.
+        "url": None,  # Allow Redis config via a DSN.
+    },
+    "consumer": {
+        "workers": 2,
+        "worker_type": "thread",
+        "initial_delay": 0.1,  # Smallest polling interval, same as -d.
+        "backoff": 1.15,  # Exponential backoff using this rate, -b.
+        "max_delay": 10.0,  # Max possible polling interval, -m.
+        # SET IT HIGH BECAUSE WE DON USE ANY INTERVAL TASK, ONLY PERIODIC IS USED
+        "scheduler_interval": 60,  # Check schedule every second, -s.
+        "periodic": True,  # Enable crontab feature.
+        "check_worker_health": True,  # Enable worker health checks.
+        "health_check_interval": 1,  # Check worker health every second.
+    },
+}
+
