@@ -46,6 +46,8 @@ services:
     environment:
       - VIRTUAL_HOST=${APP_URL}
       - VIRTUAL_PORT=8080
+      - LETSENCRYPT_HOST=${APP_URL}
+      - LETSENCRYPT_EMAIL=${ADMIN_EMAIL}
 
 
 volumes:
@@ -58,3 +60,5 @@ networks:
     name: nginx-proxy-net
   internal:
     driver: bridge
+  external:
+    name: nginx-proxy-net

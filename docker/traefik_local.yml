@@ -1,0 +1,79 @@
+version: '3'
+
+services:
+  casas_proxy:
+    image: docker.io/traefik:v3.2
+    command:
+      - "--entrypoints.websecure.address=:443"
+      - "--providers.docker"
+      - "--providers.docker.exposedbydefault=false"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=luca.delucchi@fmach.it"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--log.level=DEBUG"
+      - "--api.insecure=true"
+    ports:
+      - "8443:443"
+      - "8080:8080"
+    volumes:
+      - "./letsencrypt:/letsencrypt"
+      - ${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock:ro
+    networks:
+      - inner
+
+  casas_db:
+    image: docker.io/postgis/postgis:17-3.5
+    hostname: casas_db
+    container_name: casas_db
+    restart: always
+    env_file:
+      - casas.env
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - inner
+
+  casas_redis:
+    image: docker.io/redis:6-alpine
+    container_name: casas_redis
+    restart: always
+    volumes:
+      - redis_data:/data
+    networks:
+      - inner
+
+  casas_web:
+    image: localhost/casas
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+    hostname: casas_web
+    container_name: casas_web
+    restart: always
+    volumes:
+      - ./data:/opt/casas/
+    # ports:
+    #   - "8080:8080"
+    # expose:
+    #   - "8080"
+    depends_on:
+      - casas_db
+      - casas_redis
+    env_file:
+      - casas.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.casas_web.rule=Host(`casasweb.containers.localhost`)"
+      - "traefik.http.routers.casas_web.entrypoints=websecure"
+      - "traefik.http.routers.casas_web.tls.certresolver=myresolver"
+    networks:
+      - inner
+
+volumes:
+  db_data:
+  redis_data:
+
+networks:
+  inner:
