@@ -1,0 +1,104 @@
+version: '3'
+
+services:
+  casas_proxy:
+    image: docker.io/traefik:v3.2
+    command:
+      # Define the secure (HTTPS) entry point on port 443
+      - "--entrypoints.websecure.address=:443"
+      # Define the primary HTTP entry point on port 80
+      - "--entrypoints.web.address=:80"
+      # Enable the Docker provider to detect containers and their labels
+      - "--providers.docker"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entryPoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.asDefault=true"
+      - "--entrypoints.websecure.http.tls.certresolver=myresolver"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=${EMAIL_HOST}"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--log.level=DEBUG"
+      - "--accesslog=true"
+    labels:
+      # Enable Traefik for this container.
+      - "traefik.enable=true"
+      # A router to expose the Traefik dashboard
+      - "traefik.http.routers.dashboard.rule=proxy.containers.localhost"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.routers.dashboard.tls.certresolver=myresolver"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      # Basic Authentication for the Traefik dashboard
+      - "traefik.http.routers.dashboard.middlewares=authtraefik"
+      - "traefik.http.middlewares.authtraefik.basicauth.users=admin:PASSWD"
+      # Specify the internal server port to the dashboard service
+      - "traefik.http.services.dashboard.loadbalancer.server.port=8080"
+      # Pass the original Host header to the backend
+      - "traefik.http.services.dashboard.loadbalancer.passhostheader=true"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "./letsencrypt:/letsencrypt"
+      - ${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock:ro
+    networks:
+      - inner
+
+  casas_db:
+    image: docker.io/postgis/postgis:17-3.5
+    hostname: casas_db
+    container_name: casas_db
+    restart: always
+    env_file:
+      - casas.env
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - inner
+
+  casas_redis:
+    image: docker.io/redis:6-alpine
+    container_name: casas_redis
+    restart: always
+    volumes:
+      - redis_data:/data
+    networks:
+      - inner
+
+  casas_web:
+    image: localhost/casas
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+    hostname: casas_web
+    container_name: casas_web
+    restart: always
+    volumes:
+      - ./data:/opt/casas/
+    # ports:
+    #   - "8080:8080"
+    # expose:
+    #   - "8080"
+    depends_on:
+      - casas_db
+      - casas_redis
+    env_file:
+      - casas.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.casas_web.rule=Host(`casasweb.containers.localhost`)"
+      - "traefik.http.services.mywhoami.loadbalancer.server.port=8080"
+      - "traefik.http.routers.casas_web.entrypoints=websecure"
+      - "traefik.http.routers.casas_web.tls.certresolver=myresolver"
+    networks:
+      - inner
+
+volumes:
+  db_data:
+  redis_data:
+
+networks:
+  inner:
