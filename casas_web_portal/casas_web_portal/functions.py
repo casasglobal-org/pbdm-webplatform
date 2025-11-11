@@ -2,8 +2,12 @@ import os
 import logging
 import calendar
 from datetime import date, datetime, timedelta
+from functools import partial
 import glob
 import gzip
+from multiprocessing import Pool, cpu_count
+import time
+
 import rioxarray
 import xarray as xr
 import fiona
@@ -329,6 +333,73 @@ def read_nc(path, geom, start, end, crs="EPSG:4326", grid=True):
     return final
 
 
+def _process_single_coord(coord, outdir, outbase, provider, year_data):
+    """
+    Worker function executed by multiprocessing pool.
+    Extracts data for a single coordinate from the shared Xarray DataArrays
+    and writes the output file.
+
+    Args:
+        coord (dict): Dictionary containing coordinate information.
+        outdir (str): Output directory path.
+        outbase (str): Output filename base.
+        provider (str): Data provider ('era5' or 'cmip6').
+        year_data (dict): Dictionary containing all loaded Xarray DataArrays for the year.
+    """
+    prov_var = f"{provider}_variable"
+    lon, lat = coord["geom"]
+
+    # Extract relevant DataArrays from the shared dictionary
+    tmin_nc = year_data["tmin"]
+    tmax_nc = year_data["tmax"]
+    prec_nc = year_data["prec"]
+    solar_nc = year_data["solar"]
+    wind_nc = year_data["wind"]
+    humi_nc = year_data["humi"]
+
+    # Initialize data dictionary
+    coords = xr.Dataset(coords={"lon": lon, "lat": lat})
+    data = {
+        "coords": {"x": coords.lon.values, "y": coords.lat.values},
+        "rowcol": {"x": coord["rowcol"][0], "y": coord["rowcol"][1]},
+    }
+
+    # Extraction logic (same as original, but now parallel)
+    def extract_vals(nc_data, var_key):
+        return nc_data[VARIABLES[var_key][prov_var]].sel(
+            lon=lon, lat=lat, method="nearest"
+        )
+
+    # Precipitation
+    vals = extract_vals(prec_nc, "prec")
+    data["dates"] = vals.time.values
+    data["precip"] = vals.values
+
+    # Tmax
+    vals = extract_vals(tmax_nc, "tmax")
+    data["tmax"] = vals.values
+
+    # Tmin
+    vals = extract_vals(tmin_nc, "tmin")
+    data["tmin"] = vals.values
+
+    # Solar
+    vals = extract_vals(solar_nc, "solar")
+    data["solar"] = vals.values
+
+    # Wind
+    vals = extract_vals(wind_nc, "wind")
+    data["wind"] = vals.values
+
+    # Relative Humidity (RH)
+    vals = extract_vals(humi_nc, "rel_humidity")
+    data["rh"] = vals.values
+
+    # Write the output file
+    outfile = write_casas_files(outdir, data, outbase)
+    return outfile
+
+
 def write_casas_files(outdir, data, basename="mpi_esm_lr_", country=None):
     """Function to write the txt file
 
@@ -367,7 +438,14 @@ def write_casas_files(outdir, data, basename="mpi_esm_lr_", country=None):
 
 
 def write_casas_txt(
-    list_coords, start, end, indir, outdir, provider="era5", outbase="mpi_esm_lr_"
+    list_coords,
+    start,
+    end,
+    indir,
+    outdir,
+    provider="era5",
+    outbase="mpi_esm_lr_",
+    n_procs=None,
 ):
     """Function to read NC files and write the txt file to be passed
 
@@ -382,11 +460,14 @@ def write_casas_txt(
         provider (str, optional): The provider of data. Defaults to "era5",
                                   other accepted value is "cmip6".
         outbase (str, optional): _description_. Defaults to "mpi_esm_lr_".
+        n_procs (int, optional): Number of processes to use. Defaults to all available cores.
     """
     start_date, end_date = start_end_dates(start, end)
     outfiles = []
     prov_var = f"{provider}_variable"
     geom = None
+    if n_procs is None:
+        n_procs = round(cpu_count() / 3 * 2)
     for year in range(start_date.year, end_date.year + 1):
         if year == start_date.year:
             start_month = start_date.month
@@ -455,39 +536,40 @@ def write_casas_txt(
         humi_nc = read_nc(humi_file, geom, this_start, this_end, grid=False)
         print(f"Got all data for year {year}, writing files")
 
-        for coord in list_coords:
-            lon, lat = coord["geom"]
-            coords = xr.Dataset(coords={"lon": lon, "lat": lat})
-            data = {
-                "coords": {"x": coords.lon.values, "y": coords.lat.values},
-                "rowcol": {"x": coord["rowcol"][0], "y": coord["rowcol"][1]},
-            }
-            vals = prec_nc[VARIABLES["prec"][prov_var]].sel(
-                lon=lon, lat=lat, method="nearest"
-            )
-            data["dates"] = vals.time.values
-            data["precip"] = vals.values
-            vals = tmax_nc[VARIABLES["tmax"][prov_var]].sel(
-                lon=lon, lat=lat, method="nearest"
-            )
-            data["tmax"] = vals.values
-            vals = tmin_nc[VARIABLES["tmin"][prov_var]].sel(
-                lon=lon, lat=lat, method="nearest"
-            )
-            data["tmin"] = vals.values
-            vals = solar_nc[VARIABLES["solar"][prov_var]].sel(
-                lon=lon, lat=lat, method="nearest"
-            )
-            data["solar"] = vals.values
-            vals = wind_nc[VARIABLES["wind"][prov_var]].sel(
-                lon=lon, lat=lat, method="nearest"
-            )
-            data["wind"] = vals.values
-            vals = humi_nc[VARIABLES["rel_humidity"][prov_var]].sel(
-                lon=lon, lat=lat, method="nearest"
-            )
-            data["rh"] = vals.values
-            outfile = write_casas_files(outdir, data, outbase)
+        # --- 3. Parallelize Coordinate Extraction and Writing ---
+        year_data = {
+            "tmin": tmin_nc,
+            "tmax": tmax_nc,
+            "prec": prec_nc,
+            "solar": solar_nc,
+            "wind": wind_nc,
+            "humi": humi_nc,
+        }
+        # Use functools.partial to freeze the arguments that are constant
+        # across all processes for this year (outdir, outbase, provider, year_data)
+        worker = partial(
+            _process_single_coord,
+            outdir=outdir,
+            outbase=outbase,
+            provider=provider,
+            year_data=year_data,
+        )
+
+        start_time = time.time()
+
+        # Create a multiprocessing Pool
+        with Pool(processes=n_procs) as pool:
+            # Map the worker function to the list of coordinates
+            # pool.map returns results in the same order as the input iterable
+            results = pool.map(worker, list_coords)
+
+        end_time = time.time()
+        print(
+            f"Parallel coordinate processing finished in {end_time - start_time:.2f} seconds."
+        )
+
+        # Collect results
+        for outfile in results:
             if outfile not in outfiles:
                 outfiles.append(outfile)
     return outfiles
