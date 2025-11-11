@@ -16,34 +16,30 @@ if [ ! -d "$main_dir" ]; then
 fi
 
 if [ ! -d "$env_dir" ]; then
-    echo "Virtual environment directory does not exist"
-else
-    source "$env_dir/bin/activate"
-fi
+    echo "Virtual environment directory 'venv' does not exist"
+    env_dir="$main_dir/.env"
 
-env_dir="$main_dir/.env"
+    if [ ! -d "$env_dir" ]; then
+        echo "Environment directory '.env' does not exist"
+        env_dir="$main_dir/.venv"
 
-if [ ! -d "$env_dir" ]; then
-    echo "Environment directory does not exist"
-    exit 1
-else
-    source "$env_dir/bin/activate"
-fi
+        if [ ! -d "$env_dir" ]; then
+            echo "Virtual environment directory '.venv' does not exist"
 
-env_dir="$main_dir/.venv"
+            env_dir="$main_dir/env"
 
-if [ ! -d "$env_dir" ]; then
-    echo "Virtual environment directory does not exist"
-    exit 1
-else
-    source "$env_dir/bin/activate"
-fi
-
-env_dir="$main_dir/.env"
-
-if [ ! -d "$env_dir" ]; then
-    echo "Environment directory does not exist"
-    exit 1
+            if [ ! -d "$env_dir" ]; then
+                echo "Environment directory 'env' does not exist"
+                exit 1;
+            else
+                source "$env_dir/bin/activate"
+            fi
+        else
+            source "$env_dir/bin/activate"
+        fi
+    else
+        source "$env_dir/bin/activate"
+    fi
 else
     source "$env_dir/bin/activate"
 fi
