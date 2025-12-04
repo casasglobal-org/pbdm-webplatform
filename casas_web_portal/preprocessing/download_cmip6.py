@@ -2,6 +2,7 @@ import os
 import logging
 import requests
 import tempfile
+from django.conf import settings
 from casas_web_portal.functions import start_end_dates, merge_nc_files, VARIABLES
 
 logger = logging.getLogger()
@@ -10,6 +11,10 @@ logger.setLevel(logging.DEBUG)
 BASE_URL = "https://ds.nccs.nasa.gov/thredds/fileServer/AMES/NEX/GDDP-CMIP6"
 
 MODELS = [("MPI-ESM1-2-HR", "historical"), ("MPI-ESM1-2-HR", "ssp585")]
+
+CMIP6_DIR = os.path.join(settings.DATA_DIR, "cmip6")
+if not os.path.exists(CMIP6_DIR):
+    os.makedirs(CMIP6_DIR)
 
 
 def _download_process_data(url, filename):
@@ -39,7 +44,7 @@ def _all_data_download(
     variable,
     start_date=None,
     end_date=None,
-    output_dir=tempfile.gettempdir(),
+    output_dir=CMIP6_DIR,
     version="v2.0",
 ):
     """Process temperature data from NASA GDDP-CMIP6 dataset.
@@ -48,7 +53,7 @@ def _all_data_download(
         variable (str): The variable name to download.
         start_date (str, optional): The start date for the data retrieval. Defaults to None.
         end_date (str, optional): The end date for the data retrieval. Defaults to None.
-        output_dir (str, optional): The directory to save the output files. Defaults to tempfile.gettempdir().
+        output_dir (str, optional): The directory to save the output files. Defaults to settings.DATA_DIR joined "cmip6".
         version (str, optional): The version of the dataset to download. Defaults to "v2.0".
     Returns:
         bool: True if processing was successful, False otherwise.
@@ -74,7 +79,7 @@ def _all_data_download(
 def download_temperature(
     start_date=None,
     end_date=None,
-    output_dir=tempfile.gettempdir(),
+    output_dir=CMIP6_DIR,
     version="v2.0",
 ):
     """Download and process temperature data from NASA GDDP-CMIP6 dataset.
@@ -82,7 +87,7 @@ def download_temperature(
     Args:
         start_date (str, optional): The start date for the data retrieval. Defaults to None.
         end_date (str, optional): The end date for the data retrieval. Defaults to None.
-        output_dir (str, optional): The directory to save the output files. Defaults to tempfile.gettempdir().
+        output_dir (str, optional): The directory to save the output files. Defaults to settings.DATA_DIR joined "cmip6".
         version (str, optional): The version of the dataset to download. Defaults to "v2.0".
 
     """
@@ -97,7 +102,7 @@ def download_temperature(
 def download_humidity(
     start_date=None,
     end_date=None,
-    output_dir=tempfile.gettempdir(),
+    output_dir=CMIP6_DIR,
     version="v2.0",
 ):
     """Download and process humidity data from NASA GDDP-CMIP6 dataset.
@@ -105,7 +110,7 @@ def download_humidity(
     Args:
         start_date (str, optional): The start date for the data retrieval. Defaults to None.
         end_date (str, optional): The end date for the data retrieval. Defaults to None.
-        output_dir (str, optional): The directory to save the output files. Defaults to tempfile.gettempdir().
+        output_dir (str, optional): The directory to save the output files. Defaults to settings.DATA_DIR joined "cmip6".
         version (str, optional): The version of the dataset to download. Defaults to "v2.0".
     """
     _all_data_download(
@@ -116,7 +121,7 @@ def download_humidity(
 def download_precipitation(
     start_date=None,
     end_date=None,
-    output_dir=tempfile.gettempdir(),
+    output_dir=CMIP6_DIR,
     version="v2.0",
 ):
     """Download and process precipitation data from NASA GDDP-CMIP6 dataset.
@@ -124,7 +129,7 @@ def download_precipitation(
     Args:
         start_date (str, optional): The start date for the data retrieval. Defaults to None.
         end_date (str, optional): The end date for the data retrieval. Defaults to None.
-        output_dir (str, optional): The directory to save the output files. Defaults to tempfile.gettempdir().
+        output_dir (str, optional): The directory to save the output files. Defaults to settings.DATA_DIR joined "cmip6".
         version (str, optional): The version of the dataset to download. Defaults to "v2.0".
     """
     _all_data_download(
@@ -135,7 +140,7 @@ def download_precipitation(
 def download_wind(
     start_date=None,
     end_date=None,
-    output_dir=tempfile.gettempdir(),
+    output_dir=CMIP6_DIR,
     version="v2.0",
 ):
     """Download and process wind data from NASA GDDP-CMIP6 dataset.
@@ -143,7 +148,7 @@ def download_wind(
     Args:
         start_date (str, optional): The start date for the data retrieval. Defaults to None.
         end_date (str, optional): The end date for the data retrieval. Defaults to None.
-        output_dir (str, optional): The directory to save the output files. Defaults to tempfile.gettempdir().
+        output_dir (str, optional): The directory to save the output files. Defaults to settings.DATA_DIR joined "cmip6".
         version (str, optional): The version of the dataset to download. Defaults to "v2.0".
     """
     _all_data_download(
@@ -154,7 +159,7 @@ def download_wind(
 def download_solar(
     start_date=None,
     end_date=None,
-    output_dir=tempfile.gettempdir(),
+    output_dir=CMIP6_DIR,
     version="v2.0",
 ):
     """Download and process solar radiation data from NASA GDDP-CMIP6 dataset.
@@ -162,7 +167,7 @@ def download_solar(
     Args:
         start_date (str, optional): The start date for the data retrieval. Defaults to None.
         end_date (str, optional): The end date for the data retrieval. Defaults to None.
-        output_dir (str, optional): The directory to save the output files. Defaults to tempfile.gettempdir().
+        output_dir (str, optional): The directory to save the output files. Defaults to settings.DATA_DIR joined "cmip6".
         version (str, optional): The version of the dataset to download. Defaults to "v2.0".
     """
     _all_data_download(
@@ -170,14 +175,12 @@ def download_solar(
     )
 
 
-def download_all(
-    start_date=None, end_date=None, output_dir=tempfile.gettempdir(), version="v2.0"
-):
+def download_all(start_date=None, end_date=None, output_dir=CMIP6_DIR, version="v2.0"):
     """Download and process all variables from NASA GDDP-CMIP6 dataset.
     Args:
         start_date (str, optional): The start date for the data retrieval. Defaults to None.
         end_date (str, optional): The end date for the data retrieval. Defaults to None.
-        output_dir (str, optional): The directory to save the output files. Defaults to tempfile.gettempdir().
+        output_dir (str, optional): The directory to save the output files. Defaults to settings.DATA_DIR joined "cmip6".
         version (str, optional): The version of the dataset to download. Defaults to "v2.0".
     """
     download_precipitation(start_date, end_date, output_dir, version)
@@ -185,6 +188,3 @@ def download_all(
     download_temperature(start_date, end_date, output_dir, version)
     download_wind(start_date, end_date, output_dir, version)
     download_solar(start_date, end_date, output_dir, version)
-
-
-# 0461611293

@@ -49,5 +49,6 @@ time python ${main_dir}/casas_web_portal/manage.py download_era5 $YEAR
 time python ${main_dir}/casas_web_portal/manage.py create_txt_era5 --dir /opt/casas_data/ $YEAR
 
 rm -f /opt/casas_data/data/era5/*/*-$YEAR-*-merged.nc
+rm -f /opt/casas_data/data/era5/*/*${YEAR}*.zip
 
 exit
