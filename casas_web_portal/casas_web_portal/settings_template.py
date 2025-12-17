@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "huey.contrib.djhuey",
     "casas_web_portal",
-    "preprocessing",
     "webapi",
     "webapp",
 ]
@@ -218,4 +217,3 @@ HUEY = {
         "health_check_interval": 1,  # Check worker health every second.
     },
 }
-

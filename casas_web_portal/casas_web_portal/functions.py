@@ -402,56 +402,113 @@ def write_casas_txt(
         this_end = date(year, end_month, last_day)
         print(f"Processing year {year} from {this_start} to {this_end}")
 
-        tmin_file = os.path.join(
-            indir,
-            f'{VARIABLES["tmin"][provider]}_24_hour_minimum',
-            f'{VARIABLES["tmin"][provider]}-{year}-merged.nc',
-        )
+        if provider == "era5":
+            tmin_file = os.path.join(
+                indir,
+                f'{VARIABLES["tmin"][provider]}_24_hour_minimum',
+                f'{VARIABLES["tmin"][provider]}-{year}-merged.nc',
+            )
+        else:
+            var_dir = f'{VARIABLES["tmin"][provider]}'
+            files = glob.glob(os.path.join(indir, var_dir, f"*{year}*.nc"))
+            if len(files) > 1:
+                print(f"There are more than one files for year {year}, using first")
+            elif len(files) == 0:
+                raise ValueError("Missing tmin file")
+            tmin_file = files[0]
+
         tmin_nc = read_nc(tmin_file, geom, this_start, this_end, grid=False)
         print(f"Got tmin data")
         if provider == "era5":
             # conversion from K to C
             tmin_nc = tmin_nc - 273.15
-        tmax_file = os.path.join(
-            indir,
-            f'{VARIABLES["tmax"][provider]}_24_hour_maximum',
-            f'{VARIABLES["tmax"][provider]}-{year}-merged.nc',
-        )
+        if provider == "era5":
+            tmax_file = os.path.join(
+                indir,
+                f'{VARIABLES["tmax"][provider]}_24_hour_maximum',
+                f'{VARIABLES["tmax"][provider]}-{year}-merged.nc',
+            )
+        else:
+            var_dir = f'{VARIABLES["tmax"][provider]}'
+            files = glob.glob(os.path.join(indir, var_dir, f"*{year}*.nc"))
+            if len(files) > 1:
+                print(f"There are more than one files for year {year}, using first")
+            elif len(files) == 0:
+                raise ValueError("Missing tmax file")
+            tmax_file = files[0]
         tmax_nc = read_nc(tmax_file, geom, this_start, this_end, grid=False)
         print(f"Got tmax data")
         if provider == "era5":
             # conversion from K to C
             tmax_nc = tmax_nc - 273.15
-        prec_file = os.path.join(
-            indir,
-            f'{VARIABLES["prec"][provider]}',
-            f'{VARIABLES["prec"][provider]}-{year}-merged.nc',
-        )
+        if provider == "era5":
+            prec_file = os.path.join(
+                indir,
+                f'{VARIABLES["prec"][provider]}',
+                f'{VARIABLES["prec"][provider]}-{year}-merged.nc',
+            )
+        else:
+            var_dir = f'{VARIABLES["prec"][provider]}'
+            files = glob.glob(os.path.join(indir, var_dir, f"*{year}*.nc"))
+            if len(files) > 1:
+                print(f"There are more than one files for year {year}, using first")
+            elif len(files) == 0:
+                raise ValueError("Missing precipitation file")
+            prec_file = files[0]
+
         prec_nc = read_nc(prec_file, geom, this_start, this_end, grid=False)
         print(f"Got precip data")
-        solar_file = os.path.join(
-            indir,
-            f'{VARIABLES["solar"][provider]}',
-            f'{VARIABLES["solar"][provider]}-{year}-merged.nc',
-        )
+        if provider == "era5":
+            solar_file = os.path.join(
+                indir,
+                f'{VARIABLES["solar"][provider]}',
+                f'{VARIABLES["solar"][provider]}-{year}-merged.nc',
+            )
+        else:
+            var_dir = f'{VARIABLES["solar"][provider]}'
+            files = glob.glob(os.path.join(indir, var_dir, f"*{year}*.nc"))
+            if len(files) > 1:
+                print(f"There are more than one files for year {year}, using first")
+            elif len(files) == 0:
+                raise ValueError("Missing solar file")
+            solar_file = files[0]
+
         solar_nc = read_nc(solar_file, geom, this_start, this_end, grid=False)
         if provider == "era5":
             # conversion from J m^-2 day^-1 to W m^-2
             solar_nc = solar_nc / 86400
         print(f"Got solar data")
-        wind_file = os.path.join(
-            indir,
-            f'{VARIABLES["wind"][provider]}_24_hour_mean',
-            f'{VARIABLES["wind"][provider]}-{year}-merged.nc',
-        )
+        if provider == "era5":
+            wind_file = os.path.join(
+                indir,
+                f'{VARIABLES["wind"][provider]}_24_hour_mean',
+                f'{VARIABLES["wind"][provider]}-{year}-merged.nc',
+            )
+        else:
+            var_dir = f'{VARIABLES["wind"][provider]}'
+            files = glob.glob(os.path.join(indir, var_dir, f"*{year}*.nc"))
+            if len(files) > 1:
+                print(f"There are more than one files for year {year}, using first")
+            elif len(files) == 0:
+                raise ValueError("Missing wind file")
+            wind_file = files[0]
         wind_nc = read_nc(wind_file, geom, this_start, this_end, grid=False)
         print(f"Got wind data")
-        humi_file = os.path.join(
-            indir,
-            f'{VARIABLES["rel_humidity"][provider]}_min',
-            # f'{VARIABLES["rel_humidity"][provider]}_06_00',
-            f'{VARIABLES["rel_humidity"][provider]}-{year}-merged.nc',
-        )
+        if provider == "era5":
+            humi_file = os.path.join(
+                indir,
+                f'{VARIABLES["rel_humidity"][provider]}_min',
+                # f'{VARIABLES["rel_humidity"][provider]}_06_00',
+                f'{VARIABLES["rel_humidity"][provider]}-{year}-merged.nc',
+            )
+        else:
+            var_dir = f'{VARIABLES["rel_humidity"][provider]}'
+            files = glob.glob(os.path.join(indir, var_dir, f"*{year}*.nc"))
+            if len(files) > 1:
+                print(f"There are more than one files for year {year}, using first")
+            elif len(files) == 0:
+                raise ValueError("Missing humidity file")
+            humi_file = files[0]
         humi_nc = read_nc(humi_file, geom, this_start, this_end, grid=False)
         print(f"Got all data for year {year}, writing files")
 

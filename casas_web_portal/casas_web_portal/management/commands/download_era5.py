@@ -1,6 +1,6 @@
 import logging
 from django.core.management.base import BaseCommand, CommandError
-from preprocessing.download_era5 import download_all
+from casas_web_portal.download_era5 import download_all
 
 
 logger = logging.getLogger()
