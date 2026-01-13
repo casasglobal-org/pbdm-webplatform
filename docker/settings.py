@@ -32,7 +32,7 @@ if len(SECRET_KEY) < 50:
     open(os.path.join(BASE_DIR, "secret.key"), "w").write(SECRET_KEY)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.environ.get("DJANGO_DEBUG", "0") == "1"
 
 ALLOWED_HOSTS = [
     os.environ.get("DJANGO_ALLOWED_HOSTS", "*").split(),
