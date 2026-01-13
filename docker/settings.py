@@ -35,7 +35,7 @@ if len(SECRET_KEY) < 50:
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    "*",
+    os.environ.get("DJANGO_ALLOWED_HOSTS", "*").split(),
 ]
 
 
