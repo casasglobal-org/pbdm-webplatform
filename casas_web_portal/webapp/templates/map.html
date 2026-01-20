@@ -7,6 +7,7 @@
 <script type="text/javascript">
 
     window.drf_token = "{{ user.token.pk }}"
+    window.user_authenticated =  "{{ user.is_authenticated }}";
 
 </script>
 
@@ -45,7 +46,11 @@
                         <br>
                         <h5 class="card-title text-center">Overlay layers</h5>
                         <input type="checkbox" name="overlay" value="boundaries" id="checkbounds"><label for="boundaries">World boundaries</label><br>
-                        <input type="checkbox" name="overlay" value="myareas" id="checkareas"><label for="myareas">Your analysis</label><br>
+                        {% if user.is_authenticated %}
+                        <input type="checkbox" name="overlay" value="myareas" id="checkareas" checked="True"><label for="myareas">Your and public analysis</label><br>
+                        {% else %}
+                        <input type="checkbox" name="overlay" value="myareas" id="checkareas" disabled><label for="myareas">Public analysis</label><br>
+                        {% endif %}
                         </div>
                     </div>
                 </div>
@@ -67,8 +72,12 @@
                             {% endif %}
                             <select name="area" id="areaSelect" class="btn btn-primary">
                                 <option value="noarea" id="noarea">Select an area</option>
-
                             </select>
+                            <div class="text-right">
+                                <button type="button" class="btn btn-secondary m-1" id="loadarea" title="Load selected area" onclick="loadArea()">
+                                    <i class="fas fa-map-marked"> View area</i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

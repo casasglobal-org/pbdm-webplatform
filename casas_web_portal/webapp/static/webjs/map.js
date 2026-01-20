@@ -154,8 +154,12 @@ var areavector = new ol.layer.Vector({
     style: areastyle,
     name: 'areas',
 });
-areavector.setVisible(false);
-
+console.log(window.user_authenticated);
+if (window.user_authenticated == "False"){
+  areavector.setVisible(false);
+} else {
+  areavector.setVisible(true);
+}
 
 var polystyle = new ol.style.Style({
   fill: new ol.style.Fill({
@@ -349,6 +353,7 @@ map.on('click', function (e) {
     if (l.get('name') == 'areas'){
         $('#areaSelect').val(f.get('id'))
         $('#areaSelect').change();
+        loadArea();
     } else {
         var contenttext = '<h5>'+ f.get('name') +'</h5>';
         contenttext = contenttext + '<div class="row">'
@@ -482,6 +487,16 @@ $(document).ready(function() {
         $("#returnText").text(msg['result'])
         $("#returnModal").modal('show');
     })
+    }
+    window.loadArea = function() {
+        var selectedArea = $('#areaSelect').val();
+        if (selectedArea == "noarea") {
+            $("#returnText").text("");
+            $("#returnText").text("Please select an area to view");
+            $("#returnModal").modal('show');
+            return;
+        }
+        window.location.href = "/job/" + selectedArea;
     }
 
     // window.getTasks = function () {

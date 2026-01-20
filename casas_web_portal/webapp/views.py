@@ -69,3 +69,14 @@ def termofuse(request):
         request (_type_): _description_
     """
     return render(request, "termofuse.html")
+
+
+def job_detail(request, job_id):
+    """Function to render the job detail page
+
+    Args:
+        request (_type_): _description_
+        job_id (int): The job id
+    """
+    job = Job.objects.get(id=job_id)
+    return render(request, "job_detail.html", {"job": job})
