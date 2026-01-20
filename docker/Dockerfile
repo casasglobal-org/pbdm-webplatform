@@ -27,7 +27,7 @@ ENV PROJ_VER=3.7.1
 ENV GDAL_VER=3.6.2
 #RUN sed -i 's/${GDAL_VER}/3.6.2.11/g' requirements.txt
 RUN sed -i 's/${PROJ_VER}/3.7.1/g' docker/requirements.txt
-RUN pip install --upgrade pip; \
+RUN --mount=type=cache,target=/root/.cache/pip pip install --upgrade pip; \
     pip install --prefer-binary -r docker/requirements.txt; \
     pip install gunicorn whitenoise
 

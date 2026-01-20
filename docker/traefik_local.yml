@@ -2,19 +2,14 @@ version: '3'
 
 services:
   casas_proxy:
-    image: docker.io/traefik:v3.2
+    image: docker.io/traefik:v3.6
     command:
-      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.address=:80"
       - "--providers.docker"
-      - "--providers.docker.exposedbydefault=false"
-      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
-      - "--certificatesresolvers.myresolver.acme.email=luca.delucchi@fmach.it"
-      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
-      - "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
       - "--log.level=DEBUG"
       - "--api.insecure=true"
     ports:
-      - "8443:443"
+      - "80:80"
       - "8080:8080"
     volumes:
       - "./letsencrypt:/letsencrypt"
@@ -66,8 +61,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.casas_web.rule=Host(`casasweb.containers.localhost`)"
-      - "traefik.http.routers.casas_web.entrypoints=websecure"
-      - "traefik.http.routers.casas_web.tls.certresolver=myresolver"
+      - "traefik.http.routers.casas_web.entrypoints=web"
     networks:
       - inner
 
