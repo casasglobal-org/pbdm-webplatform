@@ -1,9 +1,11 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 from django.contrib.admin import SimpleListFilter
 from django.utils.translation import gettext_lazy as _
 
 # Register your models here.
 from .models import Country, Organization, User, Job
+
 
 class UserFilter(SimpleListFilter):
     """Filter to use with User model"""
@@ -46,7 +48,15 @@ class JobAdmin(admin.ModelAdmin):
     search_fields = ("name", "model", "weather")
 
 
+class UserAdmin(UserAdmin):
+    list_filter = [OrganizationJobFilter]
+    search_fields = ("username", "email", "first_name", "last_name")
+    fieldsets = UserAdmin.fieldsets + (
+        (_("More Info"), {"fields": ("bio", "image", "organization")}),
+    )
+
+
 admin.site.register(Country)
 admin.site.register(Organization)
-admin.site.register(User)
-admin.site.register(Job)
+admin.site.register(User, UserAdmin)
+admin.site.register(Job, JobAdmin)
