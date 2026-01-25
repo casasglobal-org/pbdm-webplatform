@@ -365,6 +365,8 @@ map.on('click', function (e) {
         var center = ol.extent.getCenter(ext);
         map.getView().fit(ext, map.getSize());
         overlay.setPosition(coordinate);
+        var wktStr = wktFormat.writeGeometry(newfeat.getGeometry().transform(epsgsrc, espgdest));
+        $("#id_geom").val("SRID=4326;" + wktStr);
     }
   })
 })
