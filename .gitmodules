@@ -1,0 +1,3 @@
+[submodule "casas_web_portal/casas-gis"]
+	path = casas_web_portal/casas-gis
+	url = https://github.com/casasglobal-org/casas-gis.git
