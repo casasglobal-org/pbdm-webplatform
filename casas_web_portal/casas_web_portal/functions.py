@@ -7,8 +7,10 @@ import gzip
 import rioxarray
 import xarray as xr
 import fiona
+import tempfile
 from casas_web_portal import settings
 from django.core.mail import send_mail
+from django.core.files.storage import FileSystemStorage
 from smtplib import SMTPException
 
 logger = logging.getLogger()
@@ -614,3 +616,17 @@ def calculate_all_casas_txt(
         list_coords, start_date, end_date, indir, outdir, provider, outbase
     )
     return outfiles
+
+
+def write_inmemory_file(memory_file, outdir=tempfile.gettempdir()):
+    """Write an in-memory file to disk.
+
+    Args:
+        memory_file (BytesIO): The in-memory file to write.
+        outdir (str): The directory to write the file to.
+        filename (str): The name of the file to write.
+    """
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    FileSystemStorage(location=outdir).save(memory_file.name, memory_file)
+    return os.path.join(outdir, memory_file.name)

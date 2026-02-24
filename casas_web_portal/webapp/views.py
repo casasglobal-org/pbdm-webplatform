@@ -1,7 +1,11 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponseNotAllowed
+from django.http import HttpResponseNotAllowed, HttpResponseRedirect
 from django.db.models import Q
+from django.urls import reverse
+from casas_web_portal.functions import write_inmemory_file
 from .forms import JobForm
+from .forms import OperationFileForm
+from .forms import OperationFinalForm
 from .models import Job
 
 # Create your views here.
@@ -31,6 +35,107 @@ def map(request):
         else:
             jobs = Job.objects.filter(Q(user=request.user) or Q(is_public=True))
     return render(request, "map.html", {"formset": formset, "jobs": jobs, "msg": None})
+
+
+def process(request):
+    """Function to use existing model to be used in fixed area
+
+    Args:
+        request (obj): the request
+    """
+    initial = {
+        "file": request.session.get("file", None),
+        "model": request.session.get("model", None),
+    }
+    formset = OperationFileForm(request.POST or None, initial=initial)
+    if request.method == "POST":
+        formset = OperationFileForm(request.POST, request.FILES)
+        if formset.is_valid():
+            # do something.
+            file_path = write_inmemory_file(formset.cleaned_data["file"])
+            request.session["file"] = file_path
+            request.session["model"] = formset.cleaned_data["model"]
+            request.session["separator"] = formset.cleaned_data["separator"]
+            return HttpResponseRedirect(reverse("operation"))
+        else:
+            return render(
+                request, "operation.html", {"formset": formset, "msg": "Invalid form"}
+            )
+    else:
+        return render(
+            request,
+            "operation.html",
+            {"formset": formset, "msg": None, "button": "Next step"},
+        )
+
+
+def operation(request):
+    """Function to render the operation page
+
+    Args:
+        request (obj): the request
+    """
+    analisys_model = request.session.get("model", None)
+    infile = request.session.get("file", None)
+    separator = request.session.get("separator", None)
+    header = None
+    if infile:
+        with open(infile, "r") as f:
+            lines = f.readlines()
+            header = lines[0].strip().split(separator.replace("\\t", "\t"))
+    lat = None
+    long = None
+    methods = []
+    if header:
+        if "latitude" in header:
+            lat = header.index("latitude")
+        elif "lat" in header:
+            lat = header.index("lat")
+        elif "y" in header:
+            lat = header.index("y")
+        elif "Lat" in header:
+            lat = header.index("Lat")
+        if "longitude" in header:
+            long = header.index("longitude")
+        elif "lon" in header:
+            long = header.index("lon")
+        elif "x" in header:
+            long = header.index("x")
+        elif "Long" in header:
+            long = header.index("Long")
+        methods = [[i, i] for i in header]
+    if request.method == "POST":
+        formset = OperationFinalForm(request.POST)
+        if formset.is_valid():
+            # do something.
+
+            data = formset.cleaned_data
+            print(analisys_model, infile, data)
+            # execute grass code here
+            return HttpResponseRedirect(reverse("map"))
+        else:
+            return render(
+                request,
+                "operation.html",
+                {
+                    "formset": formset,
+                    "msg": "Invalid form",
+                    "button": "Execute operation",
+                },
+            )
+    else:
+        initial = {"latitude": lat, "longitude": long, "parameter": methods}
+        formset = OperationFinalForm(initial=initial)
+        formset.fields["parameter"].choices = methods
+        return render(
+            request,
+            "operation.html",
+            {
+                "formset": formset,
+                "msg": None,
+                "button": "Execute operation",
+            },
+        )
 
 
 def add_new(request):

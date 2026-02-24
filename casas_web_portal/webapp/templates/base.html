@@ -60,6 +60,15 @@
 								</button>
 							</a>
 						</li>
+						{% if user.is_authenticated %}
+						<li>
+							<a href="/process">
+								<button type="button" class="btn btn-primary float-end m-1" title="Operations">
+									<i class="fas fa-gear"></i>
+								</button>
+							</a>
+						</li>
+						{% endif %}
 						{% if user.is_superuser or user.is_staff %}
 						<li>
 							<a href="/admin">

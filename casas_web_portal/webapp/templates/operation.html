@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+
+<div class="product-section">
+    <div class="container">
+        <div class="row">
+
+            <div>
+                <form method="POST" class="post-form" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ formset.as_p }}
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary close" data-bs-dismiss="modal" aria-label="Close">Close</button>
+                        <button type="submit" class="btn btn-primary">{{ button }}</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
