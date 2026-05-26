@@ -34,7 +34,8 @@ class OperationFinalForm(forms.Form):
     latitude = forms.IntegerField()
     longitude = forms.IntegerField()
     altitude = forms.IntegerField(
-        help_text="The max altitude used, after this altitude the model will not be applied"
+        help_text="The max altitude used, after this altitude the model will not be applied",
+        required=False,
     )
     parameter = forms.ChoiceField(
         choices=[],
@@ -44,23 +45,31 @@ class OperationFinalForm(forms.Form):
         choices=[["nearest", "Nearest"], ["bilinear", "Bilinear"]]
     )
     points_number = forms.IntegerField(
-        help_text="The number of points to be used for the interpolation"
+        help_text="The number of points to be used for the interpolation",
+        required=False,
     )
     legend = forms.CharField(
-        max_length=255, help_text="The test for the legend to be used in the map"
+        max_length=255,
+        help_text="The test for the legend to be used in the map",
+        required=False,
     )
     color = forms.CharField(
         max_length=2550,
         help_text="RGB color as the following format: 'R:G:B-R:G:B-R:G:B...' where R, G and B are integers between 0 and 255",
+        required=False,
     )
     crop = forms.CharField(
-        max_length=255, help_text="The layer crop to be used for the analysis"
+        max_length=255,
+        help_text="The layer crop to be used for the analysis",
+        required=False,
     )
     crop_value = forms.IntegerField(
-        help_text="The value of the crop layer to be used for the analysis"
+        help_text="The value of the crop layer to be used for the analysis",
+        required=False,
     )
     resolution = forms.IntegerField(
         min_value=1,
         max_value=3,
-        help_text="The resolution user for output png file",
+        initial=2,
+        help_text="The resolution user for output png file (1: low, 2: medium, 3: high). Default is 2.",
     )
