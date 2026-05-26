@@ -1,6 +1,6 @@
 # Description
 
-This repository includes code for the CASAS-PBDM Web API workflow, initially developed for the case study on olive/olive oil under the [MED-GOLD project](<https://doi.org/10.3030/776467>), as part of the [MED-GOLD ICT ecosystem for climate services in agriculture](<https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/horizon-results-platform/32534;keyword=med-gold>), and further developed under the [TEBAKA project](<https://www.dtascarl.org/en/projects-and-initiatives/use-case-technology-transfer/tebaka/>).
+This repository includes code for the CASAS-PBDM Web Platform, initially developed for the case study on olive/olive oil under the [MED-GOLD project](<https://doi.org/10.3030/776467>), as part of the [MED-GOLD ICT ecosystem for climate services in agriculture](<https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/horizon-results-platform/32534;keyword=med-gold>), and further developed under the [TEBAKA project](<https://www.dtascarl.org/en/projects-and-initiatives/use-case-technology-transfer/tebaka/>).
 
 [MED-GOLD CASAS-PBDM workflow infographic](https://doi.org/10.5281/zenodo.7928703):
 
@@ -14,28 +14,7 @@ See also [TEBAKA GeoStory](https://tebaka.planetek.it/catalogue/#/geostory/37) a
 
 The MED-GOLD project has received funding from the European Union's Horizon 2020 Research and Innovation programme under Grant agreement No. 776467. Project TEBAKA (project ID: ARS01_00815) was co-funded by the European Union - ERDF and ESF, “PON Ricerca e Innovazione 2014-2020”.
 
-The following folders:
-
-```
-/mgd-olive-scripts-main/casas_pbdm_coffee/
-/mgd-olive-scripts-main/casas_pbdm_coffee/
-```
-
-include code developed for analyzing the olive and coffee systems using physiologically based demographic models (PBDMs) in a geographic information system (GIS) context.
-
-The following folder:
-
-```
-/mgd-olive-scripts-main/casas_pbdm_workflow/
-```
-
-includes code for the CASAS-PBDM Web API workflow to run the Windows executable for the olive PBDM system model compiled from the Pascal source code (see below).
-
-The following folder:
-
-```
-/era5/
-```
+This last version was funded by #TODO LUIGI
 
 includes implementation of automated download and update of global AgERA5 weather data from the [Copernicus Climate Data Store](https://cds.climate.copernicus.eu/) to run the CASAS-PBDM Web API workflow.
 
@@ -53,7 +32,6 @@ The code included in this repository has been used in a research context under t
 
 3. Ponti, L., Gutierrez, A. P., Giannakopoulos, C., Varotsos, K. V., López Nevado, J., López Feria, S., Rivas González, F. W., Caboni, F., Stocchino, F., Rosati, A., Marchionni, D., Cure, J. R., Rodríguez, D., Terrado, M., De Felice, M., Dell’Aquila, A., Calmanti, S., Arjona, R., & Sanderson, M. (2024). Prospective regional analysis of olive and olive fly in Andalusia under climate change using physiologically based demographic modeling powered by cloud computing. Climate Services, 34, 100455. <https://doi.org/10.1016/j.cliser.2024.100455> (Open Access)
 
-
 4. Ponti, L., Gutierrez, A. P., Metz, M., Haas, J., Panzenböck, E., Neteler, M., Baldacchino, F., Ambrico, A., Baviello, G., Calvitti, M., Dell’Aquila, A., Calmanti, S., Lampazzi, E., Miceli, V., Cuna, D., Stocchino, F., & Carroccio, D. (2024, May 29). Realistic daily dynamics of olive and olive fly at 250 m resolution using cloud-gap-filled canopy temperature data from MODIS LST calibrated with MODIS NDVI. Super-Resolution and Downscaling for EO and Earth Science (SUREDOS24), 29-31 May 2024, ESA-ESRIN, Frascati, Italy, <https://suredos24.esa.int/>, Frascati, Italy. <https://doi.org/10.5281/zenodo.11374208> (Open Access)
 
 For further information, please contact Luigi Ponti (<luigi.ponti@enea.it>)
@@ -62,187 +40,158 @@ For further information, please contact Luigi Ponti (<luigi.ponti@enea.it>)
 
 Workflow to run PBDM executables compiled from Pascal source code.
 
-### Trello board
+## Source Code Structure and Usage
 
-Here we keep track of things:
+The repository is organized into several key directories, each serving a specific purpose within the CASAS-PBDM web platform.
 
-[PBDM-Workflow Trello board](https://trello.com/b/449PzQuo/pbdm-workflow)
+### `casas_web_portal/`
 
-### How to run serverless project
-Navigate to the foldere where is the serverless.yaml file and run:
+This is the main Django web application that provides the user interface and API for interacting with the PBDM models.
 
-```
-sls deploy 
-```
-N.B you have to previously set aws credentials in order to launch the cloudformation stack creation
+* **`webapp/`**: Contains the core logic for the web portal. `views.py` handles user requests, processes forms for submitting new jobs, and renders the HTML templates for the map interface, job details, and other pages.
+* **`webapi/`**: Implements the REST API for programmatic access to the PBDM workflow.
+* **`casas_web_portal/`**: Contains the main Django project settings (`settings_template.py`), URL configurations, and WSGI entry point.
+* **`casas-gis/`**: This directory holds the geospatial processing scripts that are the engine of the platform.
+  * **`casas_gis/`**: Contains the modern Python scripts for interacting with GRASS GIS (`grass.py`). These scripts handle tasks like importing ASCII data, projecting it, setting the computational region, performing interpolation, and generating output maps.
+  * **`casas_gis_old/`**: Contains legacy shell and Perl scripts originally developed for GRASS GIS 6 and updated for GRASS GIS 8. These are useful for understanding the original workflow. The `casas-gis/README_usage_GRASS_GIS8.md` file provides detailed instructions on how to run these legacy scripts.
 
-### How to run container locally
-In order to launch docker container locally you have to install Docker Desktop.
+### `weather_grid/`
 
-Then, you have to run the following commands:
+This directory contains utility scripts for pre-processing climate and weather data into a format suitable for the PBDM models and GIS workflow.
 
-```
-cd mgd-olive-scripts-main/casas_pbdm_workflow/processing/resources/local-environment/container
-docker build -t app . 
-docker compose up --no-deps -d app
-```
+* **`netcdf_grid_extract.py`**: A crucial Python script for extracting land grid coordinates from standard climate data formats like NetCDF (used for AgERA5, CMIP6, etc.). It identifies land cells and exports their coordinates, which are then used as input for the models.
+* **`grass_gis_notes.sh`**: A shell script with notes and example GRASS GIS commands for importing and processing the grid data generated by `netcdf_grid_extract.py`.
 
-N.B you have to use the Dockerfile with ENVs defined (NOT remove the other Dockerfile, just rename it)
+### High-Level Workflow
 
-### File tree
-```
-├── pre-processing
-│   ├── agmerra_review.py -> pre-processing for agmerra files
-│   ├── bounding_box.py -> cut agera5 files
-│   ├── generate_points.py -> generate punti.dat file for Puglia (you can use it for different location changing the latitudes and longitudes)
-│   ├── pre-processing-puglia.py -> pre-processing for agera5 files and Puglia location
-│   ├── pre-processing.py -> same of above but for Andalusia (only change lat&lon values)
-List of points for different locations:
-│   ├── punti_di_terra_Spain_Portugal.dat 
-│   ├── punti_di_terra_agera5_andalusia.dat
-│   ├── punti_di_terra_agera5_colombia.dat
+The general process for running a simulation via the web platform is as follows:
 
-├── processing
-│   ├── README.md
-│   ├── package-lock.json
-│   ├── package.json
-│   ├── resources
-│   │   ├── container
-│   │   │   ├── Dockerfile
-│   │   │   ├── MIRRORS.txt
-│   │   │   ├── Makefile
-│   │   │   ├── README.md
-│   │   │   ├── apk-tools-static-2.10.6-r0.apk
-│   │   │   ├── etc
-│   │   │   │   └── apk
-│   │   │   └── repositories
-│   │   │   ├── sbin
-│   │   │   │   └── apk.static
-│   │   │   └── winetricks.sh
-│   │   ├── dynamodb.yml
-│   │   ├── ecs.yml
-│   │   ├── iam-roles.yml
-│   │   ├── s3.yml
-│   │   ├── stepFunctions.yml
-│   │   ├── vpc.yml
-│   │   └── worker-container
-│   ├── Dockerfile
-│   ├── Dockerfile-build
-│   ├── build.sh
-│   ├── docker-compose.yml
-│   ├── etc
-│   │   └── apk
-│   └── repositories
-│   ├── pbdm
-│   │   ├── Olive.ini
-│   │   ├── Olive_no-w.exe
-│   │   ├── dat
-│   │   │   ├── VEN.dat
-│   │   │   ├── Venezuela.dat
-│   │   │   └── agmerra_grid_with_coords_admin_code.txt
-│   │   ├── lut
-│   │   │   ├── CAMYAAB2.002
-│   │   │   ├── CAMYAAE5.006
-│   │   │   ├── CAMYAAH8.001
-│   │   │   ├── CAMYAAH8.zip
-│   │   │   ├── CAMYAAJ1.002
-│   │   │   ├── CAMYAAK2.001
-│   │   │   ├── CAYOAAA2.014
-│   │   │   ├── CAYOAAB3.012
-│   │   │   ├── CAYUAAA5.014
-│   │   │   ├── Copy of yellowstar.txt
-│   │   │   ├── Olive.exe
-│   │   │   ├── OliveSoilWater.txt
-│   │   │   ├── OliveSoilWater_original.txt
-│   │   │   ├── YSTSoilWater.txt
-│   │   │   ├── YSTSoilWater.txt.$$$
-│   │   │   ├── YellowStar.txt
-│   │   │   ├── agmerra_review.py
-│   │   │   ├── get_agmerra.py
-│   │   │   ├── y.txt
-│   │   │   ├── yellow.txt
-│   │   │   └── ystsoilwater.bak
-│   │   └── pbdm-worker.py
-│   ├── run.sh
-│   ├── sbin
-│   │   ├── apk.static
-│   │   └── apk.static.dis
-│   ├── winetricks
-│   ├── winetricks.sh
-│   └── winetricks.sh.dis
-│   └── serverless.yml
-└── temporary_infrastructure
-    ├── functions
-    │   ├── api.py
-    │   └── request-api.py
-    ├── node_modules
-    │   ├── 2-thenable
-    │   │   ├── CHANGELOG.md
-    │   │   ├── LICENSE
-    │   │   ├── README.md
-    │   │   ├── index.js
-    │   │   ├── package.json
-    │   │   └── test
-    │   └── index.js
-    │   ├── @colors
-    │   │   └── colors
-    │   ├── LICENSE
-    │   ├── README.md
-    │   ├── examples
-    │   │   ├── normal-usage.js
-    │   │   └── safe-string.js
-    │   ├── index.d.ts
-    │   ├── lib
-    │   │   ├── colors.js
-    │   │   ├── custom
-    │   │   │   ├── trap.js
-    │   │   │   └── zalgo.js
-    │   │   ├── extendStringPrototype.js
-    │   │   ├── index.js
-    │   │   ├── maps
-    │   │   │   ├── america.js
-    │   │   │   ├── rainbow.js
-    │   │   │   ├── random.js
-    │   │   │   └── zebra.js
-    │   │   ├── styles.js
-    │   │   └── system
-    │   ├── has-flag.js
-    │   └── supports-colors.js
-    │   ├── package.json
-    │   ├── safe.d.ts
-    │   ├── safe.js
-    │   └── themes
-    │       └── generic-logging.js
+1. **Data Preparation (Offline)**:
+
+   * Climate data (e.g., AgERA5) is processed using `weather_grid/netcdf_grid_extract.py` to create a list of valid land grid points for a given region.
+   * PBDM models are run for these grid points, generating output text files.
+
+2. **User Interaction (Web Portal)**:
+
+   * A user navigates to the web portal and fills out a form to define a new "Job". This involves specifying a geographical area of interest (polygon), a date range, and the weather data source.
+   * The `webapp/views.py` `add_new` view handles this request.
+
+3. **Backend Processing**:
+
+   * The backend identifies which pre-computed weather data grid cells intersect with the user-defined polygon.
+   * For each intersecting grid cell, the system decompresses the relevant PBDM output file.
+   * It then executes an external script (e.g., from `casas-gis/`) to perform geospatial analysis and generate map outputs.
+   * The results are stored and can be viewed on the map interface of the web portal.
+
+## Running with Podman Compose (Containerization)
+
+Using `podman-compose` (or `docker-compose`) is the recommended way to run the web platform. It orchestrates the multi-container setup, which includes the web application, a PostGIS database, a Redis cache, and a Traefik reverse proxy.
+
+### Prerequisites
+
+* Podman and `podman-compose` installed on your system.
+* A `casas.env` file in the `docker/` directory to store environment variables.
+
+### Environment Configuration (`docker/casas.env`)
+
+Before running the services, create a `casas.env` file inside the `docker/` directory. This file holds the configuration for the database and other services.
+
+**Example `docker/casas.env`:**
+
+```env
+# PostgreSQL Database Settings
+POSTGRES_DB=casas_db
+POSTGRES_USER=casas_user
+POSTGRES_PASSWORD=a_strong_and_secret_password
+
+# Django Settings
+SECRET_KEY='your-django-secret-key-here'
+DEBUG=1 # Set to 0 in production
+ALLOWED_HOSTS=localhost,127.0.0.1,casasweb.containers.localhost
+
+# Traefik Production Settings (for traefik_production.yml)
+EMAIL_HOST=your-email@example.com
+APP_URL=your-domain.com
 ```
 
-## API utilization:
+### Local Development with Traefik (`docker/traefik_local.yml`)
 
-In order to launch an execution, you have to send this api call:
+This setup is ideal for local development. It uses Traefik to route traffic to the Django application, which is accessible at `http://casasweb.containers.localhost`.
 
-- https://{{api-endpoint}}.execute-api.{{region}}.amazonaws.com/dev/dataset/{{dataset}}/workflow/{{wf}}?country={{country}}&sdate={{sdate}}&model={{model}}&output_time_interval={{output_time_interval}}&edate={{edate}}&resolution{{resolution}}
+1. **Build and Start Services:**
+   From the `docker/` directory, run:
 
-where: 
-- dataset can take the values: agmerra or AgERA5
-- wf can take the value: pbdm
-- country can take the values:
-    - ESP-POR if dataset value is equal to agmerra
-    - ESP-AN, ITA-PUG-250m, ITA-PUG-1km
-- sdate can take the values:
-    - from 1979 to 2022 for AgERA5
-    - from 1980 to 2010 for agmerra 
-    - the format is YYYY/MM/DD
-- edate can take the values:
-    - from 1979 to 2022 for AgERA5
-    - from 1980 to 2010 for agmerra 
-    - the format is YYYY/MM/DD
-- model can take the value: olive
-- output_time_interval can take the value: 365
-- resolution can take values:
-    - standard-250m, zeuli-250m, uliveti-250m if country is ITA-PUG-250m
-    - standard-1km if country is ITA-PUG-1km
+   ```bash
+   podman-compose -f traefik_local.yml up --build -d
+   ```
 
-In order to check the worker state, you have to send this api call:
+   * `--build`: Builds the `casas_web` image from the `Dockerfile`.
+   * `-d`: Runs the containers in the background.
 
-- https://{{api-endpoint}}.execute-api.{{region}}.amazonaws.com/dev/{{wf}}/request?id={{id}}&dataset={{dataset}}
+2. **Run Database Migrations:**
+   Execute the initial database migrations:
 
-where id is the request-id returned from the previous api call
+   ```bash
+   podman-compose -f traefik_local.yml exec casas_web python manage.py migrate
+   ```
+
+3. **Access the Application:**
+
+   * **Web Portal**: `http://casasweb.containers.localhost`
+   * **Traefik Dashboard**: `http://localhost:8080` (to monitor services)
+
+4. **Stopping the Services:**
+
+   ```bash
+   podman-compose -f traefik_local.yml down
+   ```
+
+### Production with Traefik and Let's Encrypt (`docker/traefik_production.yml`)
+
+This setup is designed for a production server. It configures Traefik to automatically handle HTTPS redirection and obtain SSL certificates from Let's Encrypt.
+
+**Prerequisites for Production:**
+
+* Your server must be accessible from the internet with a public IP address.
+* A domain name (`your-domain.com`) must be pointing to your server's IP.
+* Ports 80 and 443 must be open on your server's firewall.
+* Update the `APP_URL` and `EMAIL_HOST` in `docker/casas.env`.
+* Set `DEBUG=0` in `docker/casas.env` and add your domain to `ALLOWED_HOSTS`.
+
+1. **Build and Start Services:**
+    From the `docker/` directory, run:
+
+    ```bash
+    podman-compose -f traefik_production.yml up --build -d
+    ```
+
+2. **Run Database Migrations & Collect Static Files:**
+
+   ```bash
+   podman-compose -f traefik_production.yml exec casas_web python manage.py migrate
+   podman-compose -f traefik_production.yml exec casas_web python manage.py collectstatic --no-input
+   ```
+
+3. **Access the Application:**
+  The web portal will be securely accessible at `https://your-domain.com`. Traefik will automatically redirect HTTP traffic to HTTPS.
+
+### Alternative Setup with `nginx-proxy` (`docker/compose.yml`)
+
+The `docker/compose.yml` file provides an alternative setup using `nginx-proxy` and its Let's Encrypt companion. This is suitable for environments where `nginx-proxy` is already used to manage other services.
+
+**Prerequisites for `nginx-proxy`:**
+
+1. An external Docker/Podman network named `nginx-proxy-net` must exist.
+2. `nginx-proxy` and `letsencrypt-nginx-proxy-companion` containers must be running and connected to this network.
+
+**Usage:**
+
+1. **Start the Services:**
+   From the `docker/` directory, run:
+
+   ```bash
+   podman-compose -f compose.yml up --build -d
+   ```
+
+
+  `nginx-proxy` will automatically detect the `casas_django` container and configure routing and SSL based on the `VIRTUAL_HOST` and `LETSENCRYPT_HOST` environment variables.
