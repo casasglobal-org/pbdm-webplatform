@@ -4,9 +4,12 @@ import calendar
 from datetime import date, datetime, timedelta
 import glob
 import gzip
+import subprocess
 import rioxarray
 import xarray as xr
 import fiona
+import geopandas as gpd
+from shapely.geometry import shape
 import tempfile
 from casas_web_portal import settings
 from django.core.mail import send_mail
@@ -93,6 +96,34 @@ def _send_mail(title, text, user):
         logger.error(f"Error sending email to user {user.username}")
         raise ValueError(f"Error sending email to user {user.username}")
     return True
+
+
+def _run_command(command):
+    """Function to run a command in the terminal and return the output.
+
+    Args:
+        command (list): the command to run as a list of strings, for example: ['ls', '-l']
+
+    Returns:
+        str: the output of the command
+    """
+    try:
+        result = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=True,
+        )
+        logger.debug(
+            f"Command '{' '.join(command)}' executed successfully with output: {result.stdout}"
+        )
+        return result.stdout, result.stderr
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Command '{' '.join(command)}' failed with error: {e.stderr}")
+        raise RuntimeError(
+            f"Command '{' '.join(command)}' failed with error: {e.stderr}"
+        )
 
 
 def start_end_dates(start_date=None, end_date=None, delta_days=30):
@@ -630,3 +661,27 @@ def write_inmemory_file(memory_file, outdir=tempfile.gettempdir()):
         os.makedirs(outdir)
     FileSystemStorage(location=outdir).save(memory_file.name, memory_file)
     return os.path.join(outdir, memory_file.name)
+
+
+def intersect_polygons(polygons, geom):
+    """Function to intersect grid file with a geometry.
+
+    Args:
+        polygons (str): the path to the grid file in fgb format
+        geom (dict): a dictionary with GeoJSON format polygon
+                     {'type': 'Polygon', 'coordinates': [[[10, 45], [11, 46], [12, 45], [10, 45]]]}
+    Returns:
+        list: the list of intersected polygons
+    """
+    gdf = gpd.read_file(polygons)
+    geom_shapely = shape(geom)
+    intersecting = gdf[gdf.intersects(geom_shapely)]
+    output = []
+    for idx, row in intersecting.iterrows():
+        feature = {
+            "type": "Feature",
+            "geometry": row.geometry.__geo_interface__,
+            "properties": row.drop("geometry").to_dict(),
+        }
+        output.append(feature)
+    return output
