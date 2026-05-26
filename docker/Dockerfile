@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y cython3 \
     ffmpeg \
     nano \
     gettext \
+    grass \
     && apt-get clean
 
 FROM base AS stage1

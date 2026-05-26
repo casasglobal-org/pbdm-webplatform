@@ -1,0 +1,15 @@
+Aggiungere pagina eseguire script fissi
+
+utente selezione il modello e carica un file txt.
+
+- numero di colonne per latitudine, longitudine
+- parametro scelto
+- metodo di interpolazione
+- quanti punti usi
+- testo legenda
+- color rule come tripletta di rgb separati di -
+- lowercut e uppercut per mascherare
+- crop layer
+- cropthreshold
+- altitudine
+- resolution 1,2,3 per png
