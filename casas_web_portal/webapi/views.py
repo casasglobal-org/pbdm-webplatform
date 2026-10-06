@@ -43,7 +43,7 @@ class JobViewset(viewsets.ModelViewSet):
         elif request.user.is_anonymous:
             data = Job.objects.filter(is_public=True)
         else:
-            data = Job.objects.filter(Q(user=request.user) or Q(is_public=True))
+            data = Job.objects.filter(Q(user=request.user) | Q(is_public=True))
         usedserializer = self.get_serializer_class()
         if pk:
             try:
