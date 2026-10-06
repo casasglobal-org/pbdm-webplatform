@@ -12,11 +12,13 @@ RUN apt-get update && apt-get install -y cython3 \
     nano \
     gettext \
     grass \
-    && apt-get clean
+    && apt-get autoremove \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 
 FROM base AS stage1
-RUN FULL_PATH=`pwd | rev | cut -d'/' -f2- | rev`
-RUN useradd -m user
+RUN FULL_PATH=`pwd | rev | cut -d'/' -f2- | rev` && useradd -m user
 WORKDIR /home/user
 USER user
 COPY --chown=user:user $FULL_PATH .
