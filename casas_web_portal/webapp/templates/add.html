@@ -14,12 +14,26 @@
             <div class="col-12 mb-5 mb-md-0 text-center">
                 <form method="POST" class="post-form">
                     {% csrf_token %}
+                    {% if formset.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ formset.non_field_errors }}
+                    </div>
+                    {% endif %}
                     {% for field in formset %}
-                    <div class="form-group">
-                       {{ field.label }} {{ field }}
+                    <div class="mb-3 text-start">
+                        <label class="form-label" for="{{ field.id_for_label }}">
+                            {{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}
+                        </label>
+                        {{ field }}
+                        {% if field.help_text %}
+                        <div class="form-text" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
                     </div>
                     {% endfor %}
-                    <input type="submit" value="Submit">
+                    <input type="submit" value="Submit" class="btn btn-primary mt-2">
                 </form>
             </div>
         </div>

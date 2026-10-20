@@ -6,21 +6,62 @@
 
 <script type="text/javascript">
 
-    window.drf_token = "{{ user.token.pk }}"
-    window.user_authenticated =  "{{ user.is_authenticated }}";
+    window.drf_token = "{{ user.auth_token.key }}";
+    window.user_authenticated = {% if user.is_authenticated %}true{% else %}false{% endif %};
 
 </script>
 
 <link rel="stylesheet" href="{% static 'webcss/ol.css' %}" type="text/css">
 <style>
   #map {
-    top: 0;
-    bottom: 0;
     width: 98%;
     height: 600px;
   }
   #mainrow {
     padding-top: 1vh;
+  }
+  .ol-popup {
+    position: absolute;
+    background-color: white;
+    -webkit-filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
+    filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
+    padding: 15px 22px;
+    border-radius: 10px;
+    border: 1px solid #cccccc;
+    bottom: 12px;
+    left: -50px;
+    min-width: 280px;
+  }
+  .ol-popup:after,
+  .ol-popup:before {
+    top: 100%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+  }
+  .ol-popup:after {
+    border-top-color: white;
+    border-width: 10px;
+    left: 48px;
+    margin-left: -10px;
+  }
+  .ol-popup:before {
+    border-top-color: #cccccc;
+    border-width: 11px;
+    left: 48px;
+    margin-left: -11px;
+  }
+  .ol-popup-closer {
+    position: absolute;
+    top: 2px;
+    right: 8px;
+    text-decoration: none;
+  }
+  .ol-popup-closer:after {
+    content: "\2715";
   }
 </style>
 {% endblock %}
@@ -41,15 +82,15 @@
                     <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-bs-parent="#sidebarMenu">
                         <div class="card-body left">
                         <h5 class="card-title text-center">Base layers</h5>
-                        <input type="radio" name="baselayer" value="osm" checked="true"><label for="osm">OpenStreetMap</label><br>
-                        <input type="radio" name="baselayer" value="sen2"><label for="sen2">Sentinel-2 cloudless</label><br>
+                        <input type="radio" name="baselayer" id="basel_osm" value="osm" checked="checked"><label for="basel_osm">OpenStreetMap</label><br>
+                        <input type="radio" name="baselayer" id="basel_sen2" value="sen2"><label for="basel_sen2">Sentinel-2 cloudless</label><br>
                         <br>
                         <h5 class="card-title text-center">Overlay layers</h5>
-                        <input type="checkbox" name="overlay" value="boundaries" id="checkbounds"><label for="boundaries">World boundaries</label><br>
+                        <input type="checkbox" name="overlay" value="boundaries" id="checkbounds"><label for="checkbounds">World boundaries</label><br>
                         {% if user.is_authenticated %}
-                        <input type="checkbox" name="overlay" value="myareas" id="checkareas" checked="True"><label for="myareas">Your and public analysis</label><br>
+                        <input type="checkbox" name="overlay" value="myareas" id="checkareas" checked="checked"><label for="checkareas">Your and public analysis</label><br>
                         {% else %}
-                        <input type="checkbox" name="overlay" value="myareas" id="checkareas" disabled><label for="myareas">Public analysis</label><br>
+                        <input type="checkbox" name="overlay" value="myareas" id="checkareas" disabled><label for="checkareas">Public analysis</label><br>
                         {% endif %}
                         </div>
                     </div>
@@ -92,7 +133,7 @@
                     <div id="collapseTwo" class="collapse text-center" aria-labelledby="headingTwo" data-bs-parent="#sidebarMenu">
                         <ul class="nobull">
                             <li>
-                                <button type="button" class="btn btn-primary m-1"  data-bs-toggle="button" autocomplete="off" id="addarea" title="Draw a new area">
+                                <button type="button" class="btn btn-primary m-1" autocomplete="off" aria-pressed="false" id="addarea" title="Draw a new area">
                                     <i class="fas fa-map-marked"> Draw new area</i>
                                 </button>
                             </li>
@@ -102,151 +143,122 @@
                                 </button>
                             </li>
                             <li>
-                                <button type="button" class="btn btn-primary m-1" data-bs-toggle="modal" data-bs-target="#addFeature" id="addselectedfeature" title="Add new area from selected World country">
+                                <button type="button" class="btn btn-primary m-1" id="addselectedfeature" title="Add new area from selected World country">
                                     <i class="fas fa-globe"> Add selected feature</i>
                                 </button>
                             </li>
                         </ul>
+                    </div>
+                </div>
 
-                        <div class="modal fade" id="startDrawModal" tabindex="-1" role="dialog" aria-labelledby="startDrawModalLabel" aria-hidden="true">
-							<div class="modal-dialog" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="startDrawModalLabel">Digitized feature</h5>
-                                    </div>
-                                    <div class="modal-body">
-                                        You can start to draw a polygon in the map.
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary close" data-bs-dismiss="modal" aria-label="Ok">Ok</button>
-                                    </div>
-                                </div>
+                <div class="modal fade" id="startDrawModal" tabindex="-1" role="dialog" aria-labelledby="startDrawModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="startDrawModalLabel">Digitized feature</h5>
+                            </div>
+                            <div class="modal-body">
+                                You can start to draw a polygon in the map.
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Ok">Ok</button>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-						<div class="modal fade" id="drawModal" tabindex="-1" role="dialog" aria-labelledby="drawModalLabel" aria-hidden="true">
-							<div class="modal-dialog" role="document">
-							<div class="modal-content">
-								<div class="modal-header">
-									<h5 class="modal-title" id="drawModalLabel">Digitized feature</h5>
-									<button type="button" class="close btn btn-primary" data-bs-dismiss="modal" aria-label="Close">
-									<span aria-hidden="true">&times;</span>
-									</button>
-								</div>
+                <div class="modal fade" id="drawModal" tabindex="-1" role="dialog" aria-labelledby="drawModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="drawModalLabel">Digitized feature</h5>
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
 
-                                <form method="POST" class="post-form" id="addFeatureForm">
-                                    {% csrf_token %}
-								    <div class="modal-body">
-                                        {% for field in formset %}
-                                        {% if field.label == 'Geom' %}
-                                        <input type="hidden" id="id_geom" name="geom" value=""/>
-                                        {% elif field.label == 'User' %}
-                                        <input type="hidden" id="id_user" name="user" value="{{ user.id }}"/>
-                                        {% elif field.label == 'Is public' %}
-                                        <div class="form-group">
-                                            Is public
-                                            <input id="id_is_public" type="checkbox" name="is_public" aria-describedby="id_is_public_helptext" />
-                                        </div>
-                                        {% elif field.label not in 'Started,Ended '%}
-                                        <div class="form-group">
-                                            {{ field.label }} {{ field }}
-                                        </div>
-                                        {% endif %}
-                                        {% endfor %}
-
-								    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary close" data-bs-dismiss="modal" aria-label="Close">Close</button>
-                                        <!-- <input class="btn btn-primary" type="submit" value="Submit"> -->
-                                        <button type="button" class="btn btn-primary" onclick="addFeature()">Load data</button>
+                            <form method="POST" class="post-form" id="addFeatureForm">
+                                {% csrf_token %}
+                                <div class="modal-body">
+                                    {% for field in formset %}
+                                    {% if field.label == 'Geom' %}
+                                    <input type="hidden" id="id_geom" name="geom" value=""/>
+                                    {% elif field.label == 'User' %}
+                                    <input type="hidden" id="id_user" name="user" value="{{ user.id }}"/>
+                                    {% elif field.label == 'Is public' %}
+                                    <div class="mb-3 form-check">
+                                        <input class="form-check-input" id="id_is_public" type="checkbox" name="is_public" />
+                                        <label class="form-check-label" for="id_is_public">Is public</label>
                                     </div>
-                                </form>
-							</div>
-							</div>
-						</div>
-
-                        <div class="modal fade" id="drawModal" tabindex="-1" role="dialog" aria-labelledby="addselectedfeature" aria-hidden="true">
-							<div class="modal-dialog" role="document">
-							<div class="modal-content">
-								<div class="modal-header">
-									<h5 class="modal-title" id="drawModalLabel">Selected world feature</h5>
-									<button type="button" class="close btn btn-primary" data-bs-dismiss="modal" aria-label="Close">
-									<span aria-hidden="true">&times;</span>
-									</button>
-								</div>
-
-                                <form method="POST" class="post-form" id="addFeatureForm">
-                                    {% csrf_token %}
-								    <div class="modal-body">
-                                        {% for field in formset %}
-                                        {% if field.label == 'Geom' %}
-                                        <input type="hidden" id="id_geom" name="geom" value=""/>
-                                        {% elif field.label == 'User' %}
-                                        <input type="hidden" id="id_user" name="user" value="{{ user.id }}"/>
-                                        {% elif field.label == 'Is public' %}
-                                        <div class="form-group">
-                                            Is public
-                                            <input id="id_is_public" type="checkbox" name="is_public" aria-describedby="id_is_public_helptext" />
-                                        </div>
-                                        {% elif field.label not in 'Started,Ended '%}
-                                        <div class="form-group">
-                                            {{ field.label }} {{ field }}
-                                        </div>
+                                    {% elif field.label not in 'Started,Ended,Image' %}
+                                    <div class="mb-3">
+                                        <label class="form-label" for="{{ field.id_for_label }}">
+                                            {{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}
+                                        </label>
+                                        {{ field }}
+                                        {% if field.help_text %}
+                                        <div class="form-text" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</div>
                                         {% endif %}
-                                        {% endfor %}
-
-								    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary close" data-bs-dismiss="modal" aria-label="Close">Close</button>
-                                        <!-- <input class="btn btn-primary" type="submit" value="Submit"> -->
-                                        <button type="button" class="btn btn-primary" onclick="addFeature()">Load data</button>
                                     </div>
-                                </form>
-							</div>
-							</div>
-						</div>
+                                    {% endif %}
+                                    {% endfor %}
 
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Close</button>
+                                    <button type="button" class="btn btn-primary" onclick="addFeature()">Load data</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
 
-						<div class="modal fade" id="addLayer" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
-							<div class="modal-dialog" role="document">
-							<div class="modal-content">
-								<div class="modal-header">
-									<h5 class="modal-title" id="addModalLabel">Add new area</h5>
-									<button type="button" class="close btn btn-primary" data-bs-dismiss="modal" aria-label="Close">
-									<span aria-hidden="true">&times;</span>
-									</button>
-								</div>
-                                <form method="POST" class="post-form" id="addLayerForm">
-                                    {% csrf_token %}
-								    <div class="modal-body" id="addLayerForm">
+                <div class="modal fade" id="addLayer" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addModalLabel">Add new area</h5>
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <form method="POST" class="post-form" id="addLayerForm">
+                                {% csrf_token %}
+                                <div class="modal-body">
+                                    <div class="mb-3">
                                         <label class="form-label" for="customFile">Upload vector layer (KML/Geojson)</label>
-									    <input type="file" class="form-control" id="customFile" onchange="readFile(this)"/><br>
-                                        {% for field in formset %}
-                                        {% if field.label == 'Geom' %}
-                                        <input type="hidden" id="id_geom" name="geom" value=""/>
-                                        {% elif field.label == 'User' %}
-                                        <input type="hidden" id="id_user" name="user" value="{{ user.id }}"/>
-                                        {% elif field.label == 'Is public' %}
-                                        <div class="form-group">
-                                            Is public
-                                            <input id="id_is_public" type="checkbox" name="is_public" aria-describedby="id_is_public_helptext" />
-                                        </div>
-                                        {% elif field.label not in 'Started,Ended '%}
-                                        <div class="form-group">
-                                            {{ field.label }} {{ field }}
-                                        </div>
-                                        {% endif %}
-                                        {% endfor %}
-
-								    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary close" data-bs-dismiss="modal" aria-label="Close">Close</button>
-									    <button type="button" class="btn btn-primary" onclick="addLayer()">Load data</button>
+                                        <input type="file" class="form-control" id="customFile" accept=".kml,.geojson,.json" onchange="readFile(this)"/>
                                     </div>
-                                </form>
-							</div>
-							</div>
-						</div>
+                                    {% for field in formset_layer %}
+                                    {% if field.label == 'Geom' %}
+                                    <input type="hidden" id="id_geom_layer" name="geom" value=""/>
+                                    {% elif field.label == 'User' %}
+                                    <input type="hidden" id="id_user_layer" name="user" value="{{ user.id }}"/>
+                                    {% elif field.label == 'Is public' %}
+                                    <div class="mb-3 form-check">
+                                        <input class="form-check-input" id="id_is_public_layer" type="checkbox" name="is_public" />
+                                        <label class="form-check-label" for="id_is_public_layer">Is public</label>
+                                    </div>
+                                    {% elif field.label not in 'Started,Ended,Image' %}
+                                    <div class="mb-3">
+                                        <label class="form-label" for="{{ field.id_for_label }}">
+                                            {{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}
+                                        </label>
+                                        {{ field }}
+                                        {% if field.help_text %}
+                                        <div class="form-text" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</div>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                    {% endfor %}
+
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Close</button>
+                                    <button type="button" class="btn btn-primary" onclick="addLayer()">Load data</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
                 {% endif %}

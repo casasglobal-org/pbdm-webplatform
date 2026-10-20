@@ -38,11 +38,16 @@ def map(request):
         return HttpResponseNotAllowed()
     else:
         formset = JobForm()
+        formset_layer = JobForm(auto_id="layer_%s")
         if request.user.is_anonymous:
             jobs = Job.objects.filter(is_public=True)
         else:
-            jobs = Job.objects.filter(Q(user=request.user) or Q(is_public=True))
-    return render(request, "map.html", {"formset": formset, "jobs": jobs, "msg": None})
+            jobs = Job.objects.filter(Q(user=request.user) | Q(is_public=True))
+    return render(
+        request,
+        "map.html",
+        {"formset": formset, "formset_layer": formset_layer, "jobs": jobs, "msg": None},
+    )
 
 
 def process(request):
@@ -67,7 +72,13 @@ def process(request):
             return HttpResponseRedirect(reverse("operation"))
         else:
             return render(
-                request, "operation.html", {"formset": formset, "msg": "Invalid form"}
+                request,
+                "operation.html",
+                {
+                    "formset": formset,
+                    "msg": "Invalid form",
+                    "button": "Next step",
+                },
             )
     else:
         return render(
@@ -166,9 +177,9 @@ def add_new(request):
             formset.save()
             weather = formset.cleaned_data["weather"]
             start_date = formset.cleaned_data["start_date"]
-            start_date_split = start_date.split("-")
+            start_date_split = str(start_date).split("-")
             end_date = formset.cleaned_data["end_date"]
-            end_date_split = end_date.split("-")
+            end_date_split = str(end_date).split("-")
             if weather == "era5":
                 grid = os.path.join(DATA_DIR, "era5_grid_land.fgb")
             elif weather == "cmip6":

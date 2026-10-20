@@ -114,6 +114,13 @@ EMAIL_HOST=your-email@example.com
 APP_URL=your-domain.com
 ```
 
+### Start podman for not root user
+
+```
+export DOCKER_HOST=unix:///run/user/$(id -u)/podman.sock
+podman system service --time=0 unix:///run/user/$(id -u)/podman.sock
+```
+
 ### Local Development with Traefik (`docker/traefik_local.yml`)
 
 This setup is ideal for local development. It uses Traefik to route traffic to the Django application, which is accessible at `http://casasweb.containers.localhost`.

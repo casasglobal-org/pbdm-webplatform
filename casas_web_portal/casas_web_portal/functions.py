@@ -1,15 +1,12 @@
 import os
+import json
 import logging
 import calendar
 from datetime import date, datetime, timedelta
 import glob
 import gzip
 import subprocess
-import rioxarray
 import xarray as xr
-import fiona
-import geopandas as gpd
-from shapely.geometry import shape
 import tempfile
 from casas_web_portal import settings
 from django.core.mail import send_mail
@@ -296,6 +293,7 @@ def min_array(paths, geom, start, end, crs="EPSG:4326", grid=False):
     Returns:
         xarray.Dataset: the minimum xarray dataset
     """
+    import rioxarray  # noqa: F401  # registers the .rio accessor
 
     ncs = []
     for path in paths:
@@ -340,6 +338,8 @@ def read_nc(path, geom, start, end, crs="EPSG:4326", grid=True):
     Returns:
         A xarray object filtered
     """
+    import rioxarray  # noqa: F401  # registers the .rio accessor
+
     xds = xr.open_dataset(path)
     if {"lat", "lon"}.issubset(xds.dims):
         xds = xds.rio.set_spatial_dims(x_dim="lon", y_dim="lat", inplace=True)
@@ -592,6 +592,8 @@ def _read_file_for_coords(file_path, limit=None):
     Returns:
         dict: Data list for the given coordinates.
     """
+    import fiona
+
     list_coords = []
     with fiona.open(file_path) as src:
         if limit:
@@ -668,13 +670,22 @@ def intersect_polygons(polygons, geom):
 
     Args:
         polygons (str): the path to the grid file in fgb format
-        geom (dict): a dictionary with GeoJSON format polygon
-                     {'type': 'Polygon', 'coordinates': [[[10, 45], [11, 46], [12, 45], [10, 45]]]}
+        geom: a GeoJSON dictionary, a WKT/EWKT string, a shapely geometry
+              or a Django GEOSGeometry (Polygon or MultiPolygon)
+              {'type': 'Polygon', 'coordinates': [[[10, 45], [11, 46], [12, 45], [10, 45]]]}
     Returns:
         list: the list of intersected polygons
     """
+    import geopandas as gpd
+    from shapely.geometry import shape
+    from django.contrib.gis.geos import GEOSGeometry
+
     gdf = gpd.read_file(polygons)
-    geom_shapely = shape(geom)
+    if hasattr(geom, "geojson"):
+        geom = json.loads(geom.geojson)
+    elif isinstance(geom, str):
+        geom = json.loads(GEOSGeometry(geom).geojson)
+    geom_shapely = shape(geom) if isinstance(geom, dict) else geom
     intersecting = gdf[gdf.intersects(geom_shapely)]
     output = []
     for idx, row in intersecting.iterrows():

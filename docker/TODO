@@ -13,3 +13,6 @@ utente selezione il modello e carica un file txt.
 - cropthreshold
 - altitudine
 - resolution 1,2,3 per png
+
+-- Creare script GRASS con input da utente con file da leggere con parametri scelti
+-- Script pascal, file ini di default è presente, l'utente potrebbe caricare uno nuovo per modificare alcuni parametri

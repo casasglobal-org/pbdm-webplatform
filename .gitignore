@@ -139,3 +139,6 @@ docker/casas.env
 
 # static files
 casas_web_portal/staticfiles/
+
+# geodata
+casas_web_portal/webapp/static/data/*.fgb

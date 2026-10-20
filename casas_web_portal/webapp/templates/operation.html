@@ -6,13 +6,34 @@
 
 <div class="product-section">
     <div class="container">
-        <div class="row">
+        <div class="row justify-content-center">
 
-            <div>
-                <form method="POST" class="post-form" method="post" enctype="multipart/form-data">
+            <div class="col-12 col-md-9 col-lg-7">
+                {% if msg %}
+                <div class="alert alert-danger" role="alert">{{ msg }}</div>
+                {% endif %}
+                <form method="post" class="post-form" enctype="multipart/form-data">
                     {% csrf_token %}
-                    {{ formset.as_p }}
-                    <div class="modal-footer">
+                    {% if formset.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ formset.non_field_errors }}
+                    </div>
+                    {% endif %}
+                    {% for field in formset %}
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ field.id_for_label }}">
+                            {{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}
+                        </label>
+                        {{ field }}
+                        {% if field.help_text %}
+                        <div class="form-text" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                    <div class="d-flex justify-content-end gap-2 mt-4">
                         <button type="button" class="btn btn-secondary close" data-bs-dismiss="modal" aria-label="Close">Close</button>
                         <button type="submit" class="btn btn-primary">{{ button }}</button>
                     </div>

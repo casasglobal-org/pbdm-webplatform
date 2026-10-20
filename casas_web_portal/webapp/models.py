@@ -2,6 +2,7 @@ from django.contrib.gis.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.encoding import smart_str
 from django.utils.translation import gettext_lazy as _
+
 # Create your models here.
 
 CONTINENT = (
@@ -13,15 +14,9 @@ CONTINENT = (
     ("OC", _("Oceania")),
 )
 
-PDBMS = (
-    ("olive", _("Olive")),
-    ("another", _("Another"))
-)
+PDBMS = (("olive", _("Olive")), ("another", _("Another")))
 
-WEATHERS = (
-    ("era5", "AgERA5 v2.0"),
-    ("cmip6", "NEX-GDDP-CMIP6 v2.0")
-)
+WEATHERS = (("era5", "AgERA5 v2.0"), ("cmip6", "NEX-GDDP-CMIP6 v2.0"))
 
 
 class BaseDigi(models.Model):
@@ -52,9 +47,7 @@ class Country(BaseDigi):
 
     shortname = models.CharField(max_length=3)
     geom = models.MultiPolygonField(srid=4326, geography=True)
-    continent = models.CharField(
-        max_length=2, choices=CONTINENT, null=True, blank=True
-    )
+    continent = models.CharField(max_length=2, choices=CONTINENT, null=True, blank=True)
 
     class Meta(BaseDigi.Meta):
         db_table = "general_country"
@@ -115,7 +108,7 @@ class User(AbstractUser):
         Organization, on_delete=models.PROTECT, null=True, blank=True
     )
 
-    class Meta():
+    class Meta:
         db_table = "general_user"
 
     @property
@@ -138,7 +131,7 @@ class Job(BaseDigi):
     end_date = models.DateField()
     model = models.CharField(choices=PDBMS, help_text=_("The chosen PDMB model"))
     weather = models.CharField(choices=WEATHERS, help_text=_("The chosen weather data"))
-    geom = models.PolygonField(
+    geom = models.MultiPolygonField(
         srid=4326,
         geography=True,
         help_text=_("The area of interest for the job"),

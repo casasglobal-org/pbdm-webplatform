@@ -1,25 +1,75 @@
 from django.contrib.gis import forms
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from .models import Job
 
 
-class BootstrapForm(forms.ModelForm):
+class BootstrapFormMixin:
+    """Add the Bootstrap 5 class matching each widget to the rendered input."""
+
     def __init__(self, *args, **kwargs):
-        super(BootstrapForm, self).__init__(*args, **kwargs)
-        for field in iter(self.fields):
-            self.fields[field].widget.attrs.update({"class": "form-control"})
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            widget = field.widget
+            if isinstance(widget, forms.HiddenInput):
+                continue
+            if isinstance(
+                widget,
+                (forms.CheckboxInput, forms.CheckboxSelectMultiple, forms.RadioSelect),
+            ):
+                css_class = "form-check-input"
+            elif isinstance(widget, (forms.Select, forms.SelectMultiple)):
+                css_class = "form-select"
+            else:
+                css_class = "form-control"
+            classes = widget.attrs.get("class", "").split()
+            if css_class not in classes:
+                classes.append(css_class)
+            widget.attrs["class"] = " ".join(classes)
+
+
+class BootstrapForm(BootstrapFormMixin, forms.ModelForm):
+    pass
+
+
+class DatePickerInput(forms.DateInput):
+    """HTML5 date input, shows the browser date picker."""
+
+    input_type = "date"
+
+
+class JobGeomField(forms.MultiPolygonField):
+    """A MultiPolygon field also accepting a single Polygon.
+
+    The drawn areas are single polygons, they are wrapped into a
+    MultiPolygon with one part before the MultiPolygon type check.
+    """
+
+    def to_python(self, value):
+        geom = super().to_python(value)
+        if geom is None or geom.geom_type != "Polygon":
+            return geom
+        srid = geom.srid
+        geom = MultiPolygon(GEOSGeometry(geom.wkt))
+        if srid:
+            geom.srid = srid
+        return geom
 
 
 class JobForm(BootstrapForm):
-    geom = forms.PolygonField(
+    geom = JobGeomField(
         srid=4326,
     )  #  widget=forms.OSMWidget(attrs={"display_raw": True}))
 
     class Meta:
         model = Job
         fields = "__all__"
+        widgets = {
+            "start_date": DatePickerInput(format="%Y-%m-%d"),
+            "end_date": DatePickerInput(format="%Y-%m-%d"),
+        }
 
 
-class OperationFileForm(forms.Form):
+class OperationFileForm(BootstrapFormMixin, forms.Form):
     model = forms.ChoiceField(
         choices=[["andalusia", "Andalusia"], ["italia", "Italia"]]
     )
@@ -30,7 +80,7 @@ class OperationFileForm(forms.Form):
     )
 
 
-class OperationFinalForm(forms.Form):
+class OperationFinalForm(BootstrapFormMixin, forms.Form):
     latitude = forms.IntegerField()
     longitude = forms.IntegerField()
     altitude = forms.IntegerField(
