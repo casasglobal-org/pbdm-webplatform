@@ -15,8 +15,9 @@ from .models import Job
 
 # Create your views here.
 MAIN_DIR = os.path.dirname(os.path.abspath(__file__))
-SCRIPTS_DIR = os.path.join(MAIN_DIR, "scripts")
+SCRIPTS_DIR = os.path.join(settings.BASE_DIR, "scripts")
 DATA_DIR = os.path.join(MAIN_DIR, "static", "data")
+GIS_OUTPUT_INTERVAL = 30
 
 
 def index(request):
@@ -176,38 +177,39 @@ def add_new(request):
         if formset.is_valid():
             formset.save()
             weather = formset.cleaned_data["weather"]
+            model = formset.cleaned_data["model"]
             start_date = formset.cleaned_data["start_date"]
-            start_date_split = str(start_date).split("-")
             end_date = formset.cleaned_data["end_date"]
-            end_date_split = str(end_date).split("-")
             if weather == "era5":
                 grid = os.path.join(DATA_DIR, "era5_grid_land.fgb")
             elif weather == "cmip6":
                 grid = os.path.join(DATA_DIR, "cmip6_grid_land.fgb")
             polygons = intersect_polygons(grid, formset.cleaned_data["geom"])
             for poly in polygons:
-                # do something.
-                txt_file = f"casas_{weather}_{poly['properties']['x']}_{poly['properties']['y']}.txt"
-                gzip_file = os.path.join(
-                    settings["DATA_DIR"], weather, f"{txt_file}.gz"
-                )
-                unzip_file = os.path.join(settings["TXT_DIR"], weather, txt_file)
+                x = poly["properties"]["x"]
+                y = poly["properties"]["y"]
+                txt_file = f"casas_{weather}_{x}_{y}.txt"
+                gzip_file = os.path.join(settings.TXT_DIR, weather, f"{txt_file}.gz")
+                unzip_file = os.path.join(settings.TXT_DIR, weather, txt_file)
+                rundir = os.path.join(settings.TXT_DIR, weather, f"{model}_{x}_{y}")
+                os.makedirs(rundir, exist_ok=True)
                 with gzip.open(gzip_file, "r") as f:
                     with open(unzip_file, "wb") as out:
                         out.write(f.read())
                 _run_command(
                     [
-                        TODO,
-                        TODO,
-                        start_date_split[0],
-                        start_date_split[1],
-                        start_date_split[2],
-                        end_date_split[0],
-                        end_date_split[1],
-                        end_date_split[2],
-                        TODO,
-                        txt_file,
-                    ]
+                        os.path.join(SCRIPTS_DIR, model),
+                        os.path.join(SCRIPTS_DIR, f"{model}.ini"),
+                        str(start_date.month),
+                        str(start_date.day),
+                        str(start_date.year),
+                        str(end_date.month),
+                        str(end_date.day),
+                        str(end_date.year),
+                        str(GIS_OUTPUT_INTERVAL),
+                        unzip_file,
+                    ],
+                    cwd=rundir,
                 )
                 os.remove(unzip_file)
             return redirect("/")

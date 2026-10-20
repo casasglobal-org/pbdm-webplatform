@@ -95,11 +95,12 @@ def _send_mail(title, text, user):
     return True
 
 
-def _run_command(command):
+def _run_command(command, cwd=None):
     """Function to run a command in the terminal and return the output.
 
     Args:
         command (list): the command to run as a list of strings, for example: ['ls', '-l']
+        cwd (str, optional): the working directory of the command. Defaults to None.
 
     Returns:
         str: the output of the command
@@ -111,6 +112,7 @@ def _run_command(command):
             stderr=subprocess.PIPE,
             text=True,
             check=True,
+            cwd=cwd,
         )
         logger.debug(
             f"Command '{' '.join(command)}' executed successfully with output: {result.stdout}"
