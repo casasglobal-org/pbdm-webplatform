@@ -128,6 +128,20 @@ var sentinellayer = new ol.layer.Tile({
 var osmlayer = new ol.layer.Tile({
   source: new ol.source.OSM()
 })
+osmlayer.getSource().setTileLoadFunction(function tileLoader(tile, src) {
+  var client = new XMLHttpRequest();
+  client.open("GET", src);
+  client.responseType = "arraybuffer";
+  client.setRequestHeader("Accept", "image/*");
+  client.setRequestHeader("Content-Type", "text/plain");
+  client.setRequestHeader("X-Requested-With", "CASAS Web Portal");
+  client.onload = function () {
+    var blob = new Blob([this.response], {type: "image/png"});
+    var imageUrl = window.URL.createObjectURL(blob);
+    tile.getImage().src = imageUrl;
+  };
+  client.send();
+});
 
 var boundstyle = new ol.style.Style({
   fill: new ol.style.Fill({
