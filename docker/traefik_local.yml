@@ -2,11 +2,11 @@ version: '3'
 
 services:
   casas_proxy:
-    image: docker.io/traefik:v3.6
+    image: docker.io/traefik:v3.7
     command:
       - "--entrypoints.web.address=:80"
       - "--providers.docker"
-      - "--log.level=DEBUG"
+      - "--log.level=INFO"
       - "--api.insecure=true"
     ports:
       - "80:80"
