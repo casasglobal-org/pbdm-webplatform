@@ -62,7 +62,7 @@ class JobForm(BootstrapForm):
 
     class Meta:
         model = Job
-        fields = "__all__"
+        exclude = ["model_output", "gis_output"]
         widgets = {
             "start_date": DatePickerInput(format="%Y-%m-%d"),
             "end_date": DatePickerInput(format="%Y-%m-%d"),

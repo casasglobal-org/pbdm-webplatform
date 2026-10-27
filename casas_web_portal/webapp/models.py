@@ -149,6 +149,19 @@ class Job(BaseDigi):
         default=False,
         help_text=_("If true the job is visible to all the users"),
     )
+    model_output = models.FileField(
+        upload_to="model_output/",
+        null=True,
+        blank=True,
+        help_text=_("The output file of the job"),
+    )
+
+    gis_output = models.FileField(
+        upload_to="gis_output/",
+        null=True,
+        blank=True,
+        help_text=_("The output file of the job"),
+    )
 
     class Meta(BaseDigi.Meta):
         db_table = "general_job"

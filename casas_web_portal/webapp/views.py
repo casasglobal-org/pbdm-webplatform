@@ -1,6 +1,9 @@
 import os
 import gzip
+import tempfile
+import zipfile
 from django.conf import settings
+from django.core.files import File
 from django.shortcuts import render, redirect
 from django.http import HttpResponseNotAllowed, HttpResponseRedirect
 from django.db.models import Q
@@ -175,7 +178,7 @@ def add_new(request):
     if request.method == "POST":
         formset = JobForm(request.POST, request.FILES)
         if formset.is_valid():
-            formset.save()
+            job = formset.save()
             weather = formset.cleaned_data["weather"]
             model = formset.cleaned_data["model"]
             start_date = formset.cleaned_data["start_date"]
@@ -185,6 +188,7 @@ def add_new(request):
             elif weather == "cmip6":
                 grid = os.path.join(DATA_DIR, "cmip6_grid_land.fgb")
             polygons = intersect_polygons(grid, formset.cleaned_data["geom"])
+            rundirs = []
             for poly in polygons:
                 x = poly["properties"]["x"]
                 y = poly["properties"]["y"]
@@ -196,6 +200,12 @@ def add_new(request):
                 with gzip.open(gzip_file, "r") as f:
                     with open(unzip_file, "wb") as out:
                         out.write(f.read())
+                # argv1 = SCRIPTS_DIR/<model> — script name identical to the model choice (olive)
+                # argv2 = SCRIPTS_DIR/<model>.ini (setup file)
+                # dates passed as month/day/year
+                # argv8 = GIS_OUTPUT_INTERVAL = 30 (monthly, per your choice)
+                # argv9 = full path of the unzipped weather txt
+                # each cell runs in its own txt/<weather>/<model>_<x>_<y>/ dir (per your choice), cwd=rundir
                 _run_command(
                     [
                         os.path.join(SCRIPTS_DIR, model),
@@ -212,6 +222,24 @@ def add_new(request):
                     cwd=rundir,
                 )
                 os.remove(unzip_file)
+                rundirs.append(rundir)
+            if rundirs:
+                archive_name = f"{job.id}.zip"
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    archive_path = os.path.join(tmpdir, archive_name)
+                    with zipfile.ZipFile(
+                        archive_path, "w", zipfile.ZIP_DEFLATED
+                    ) as archive:
+                        for rundir in rundirs:
+                            for fname in sorted(os.listdir(rundir)):
+                                archive.write(
+                                    os.path.join(rundir, fname),
+                                    arcname=os.path.join(
+                                        os.path.basename(rundir), fname
+                                    ),
+                                )
+                    with open(archive_path, "rb") as archive:
+                        job.model_output.save(archive_name, File(archive), save=True)
             return redirect("/")
     else:
         formset = JobForm()
