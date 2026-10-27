@@ -37,7 +37,9 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - inner
+      inner:
+        aliases:
+          - redis
 
   casas_web:
     image: localhost/casas
@@ -62,6 +64,21 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.casas_web.rule=Host(`casasweb.containers.localhost`)"
       - "traefik.http.routers.casas_web.entrypoints=web"
+    networks:
+      - inner
+
+  casas_huey:
+    image: localhost/casas
+    container_name: casas_huey
+    restart: always
+    command: ["sh", "-c", "cd casas_web_portal && exec python3 manage.py run_huey"]
+    volumes:
+      - ./data:/opt/casas/
+    depends_on:
+      - casas_db
+      - casas_redis
+    env_file:
+      - casas.env
     networks:
       - inner
 

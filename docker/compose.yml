@@ -19,7 +19,9 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - internal
+      internal:
+        aliases:
+          - redis
 
   casas_django:
     image: localhost/casas
