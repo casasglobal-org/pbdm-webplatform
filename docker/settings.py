@@ -245,6 +245,7 @@ HUEY = {
 
 # Email
 ADMINS = [(os.environ["CASAS_USER"], os.environ["CASAS_EMAIL"])]
+APP_URL = os.environ.get("APP_URL", "")
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = os.environ["EMAIL_HOST"]

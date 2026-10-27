@@ -10,6 +10,7 @@ class JobSerializer(serializers.ModelSerializer):
         model = Job
         #fields = '__all__'
         exclude = ["image",]
+        read_only_fields = ["model_output", "gis_output"]
 
     def validate_geom(self, value):
         """Return a MultiPolygon for Job.geom.

@@ -191,7 +191,7 @@ HUEY = {
     "name": DATABASES["default"]["NAME"],  # Use db name for huey.
     "results": True,  # Store return values of tasks.
     "store_none": False,  # If a task returns None, do not save to results.
-    "immediate": False,  # If DEBUG=True, run synchronously.
+    "immediate": DEBUG,  # Run synchronously when DEBUG is enabled.
     "utc": True,  # Use UTC for all times internally.
     "blocking": True,  # Perform blocking pop rather than poll Redis.
     "connection": {

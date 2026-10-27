@@ -50,6 +50,22 @@ services:
       - LETSENCRYPT_HOST=${APP_URL}
       - LETSENCRYPT_EMAIL=${ADMIN_EMAIL}
 
+  casas_huey:
+    image: localhost/casas
+    container_name: casas_huey
+    restart: always
+    command: ["sh", "-c", "cd casas_web_portal && exec python3 manage.py run_huey"]
+    volumes:
+      - ./data:/opt/casas/
+      - ./grassdata:/opt/grassdata
+    depends_on:
+      - casas_db
+      - casas_redis
+    env_file:
+      - casas.env
+    networks:
+      - internal
+
 
 volumes:
   db_data:

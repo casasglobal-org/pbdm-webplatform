@@ -46,6 +46,8 @@
                 <p><strong>{% trans "End Date:" %}</strong> {{ job.end_date }}</p>
                 {% if job.model_output %}
                 <p><strong>{% trans "Model Output:" %}</strong> <a href="{{ job.model_output.url }}" download>{{ job.model_output.name }}</a></p>
+                {% elif job.started and not job.ended %}
+                <p><strong>{% trans "Model Output:" %}</strong> {% trans "Processing..." %}</p>
                 {% endif %}
             </div>
             <div class="col-md-8">

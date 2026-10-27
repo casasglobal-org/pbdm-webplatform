@@ -1,9 +1,21 @@
+import gzip
+import os
+import tempfile
+import zipfile
+
+from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.auth.models import AbstractUser
+from django.core.files import File
+from django.utils import timezone
 from django.utils.encoding import smart_str
 from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
+
+GRID_DIR = os.path.join(settings.BASE_DIR, "webapp", "static", "data")
+SCRIPTS_DIR = os.path.join(settings.BASE_DIR, "scripts")
+GIS_OUTPUT_INTERVAL = 30
 
 CONTINENT = (
     ("EU", _("Europe")),
@@ -170,3 +182,65 @@ class Job(BaseDigi):
     def __str__(self):
         output = f"{self.name} {self.model} {self.weather} - {self.start_date}/{self.end_date}"
         return smart_str(output)
+
+    def run_model(self):
+        """Run the PDMB model on every grid cell intersecting the job area.
+
+        The model is executed in a dedicated working directory for each cell
+        and the outputs of all the cells are stored in ``model_output``.
+        """
+        from casas_web_portal.functions import _run_command, intersect_polygons
+
+        grid = os.path.join(GRID_DIR, f"{self.weather}_grid_land.fgb")
+        polygons = intersect_polygons(grid, self.geom)
+        rundirs = []
+        self.started = timezone.now()
+        self.save(update_fields=["started"])
+        for poly in polygons:
+            x = poly["properties"]["x"]
+            y = poly["properties"]["y"]
+            txt_file = f"casas_{self.weather}_{x}_{y}.txt"
+            gzip_file = os.path.join(settings.TXT_DIR, self.weather, f"{txt_file}.gz")
+            rundir = os.path.join(
+                settings.TXT_DIR, self.weather, f"{self.model}_{self.id}_{x}_{y}"
+            )
+            unzip_file = os.path.join(rundir, txt_file)
+            os.makedirs(rundir, exist_ok=True)
+            with gzip.open(gzip_file, "r") as f:
+                with open(unzip_file, "wb") as out:
+                    out.write(f.read())
+            _run_command(
+                [
+                    os.path.join(SCRIPTS_DIR, self.model),
+                    os.path.join(SCRIPTS_DIR, f"{self.model}.ini"),
+                    str(self.start_date.month),
+                    str(self.start_date.day),
+                    str(self.start_date.year),
+                    str(self.end_date.month),
+                    str(self.end_date.day),
+                    str(self.end_date.year),
+                    str(GIS_OUTPUT_INTERVAL),
+                    unzip_file,
+                ],
+                cwd=rundir,
+            )
+            os.remove(unzip_file)
+            rundirs.append(rundir)
+        if rundirs:
+            archive_name = f"{self.id}.zip"
+            with tempfile.TemporaryDirectory() as tmpdir:
+                archive_path = os.path.join(tmpdir, archive_name)
+                with zipfile.ZipFile(
+                    archive_path, "w", zipfile.ZIP_DEFLATED
+                ) as archive:
+                    for rundir in rundirs:
+                        for fname in sorted(os.listdir(rundir)):
+                            archive.write(
+                                os.path.join(rundir, fname),
+                                arcname=os.path.join(os.path.basename(rundir), fname),
+                            )
+                with open(archive_path, "rb") as archive:
+                    self.model_output.save(archive_name, File(archive), save=True)
+        self.ended = timezone.now()
+        self.save(update_fields=["ended"])
+        return self.model_output

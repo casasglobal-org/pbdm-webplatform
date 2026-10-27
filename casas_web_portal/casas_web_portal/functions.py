@@ -8,7 +8,7 @@ import gzip
 import subprocess
 import xarray as xr
 import tempfile
-from casas_web_portal import settings
+from django.conf import settings
 from django.core.mail import send_mail
 from django.core.files.storage import FileSystemStorage
 from smtplib import SMTPException

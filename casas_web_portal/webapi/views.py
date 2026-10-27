@@ -6,6 +6,7 @@ from rest_framework.response import Response
 
 from casas_web_portal.permissions import get_permissions_class
 from webapp.models import Job
+from webapp.tasks import run_job
 
 from .serializers import JobSerializer
 
@@ -60,3 +61,7 @@ class JobViewset(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        job = serializer.save()
+        run_job(job.pk)
