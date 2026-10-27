@@ -1,7 +1,10 @@
+from django.conf import settings
 from django.shortcuts import render, redirect
 from django.http import HttpResponseNotAllowed, HttpResponseRedirect
 from django.db.models import Q
 from django.urls import reverse
+from django.contrib.auth.decorators import login_required
+from django.views.static import serve
 from casas_web_portal.functions import write_inmemory_file
 from casas_web_portal.functions import _run_command
 from .forms import JobForm
@@ -44,6 +47,7 @@ def map(request):
     )
 
 
+@login_required
 def process(request):
     """Function to use existing model to be used in fixed area
 
@@ -82,6 +86,7 @@ def process(request):
         )
 
 
+@login_required
 def operation(request):
     """Function to render the operation page
 
@@ -156,6 +161,7 @@ def operation(request):
         )
 
 
+@login_required
 def add_new(request):
     """Views to add a new job
 
@@ -194,6 +200,7 @@ def termofuse(request):
     return render(request, "termofuse.html")
 
 
+@login_required
 def job_detail(request, job_id):
     """Function to render the job detail page
 
@@ -203,3 +210,14 @@ def job_detail(request, job_id):
     """
     job = Job.objects.get(id=job_id)
     return render(request, "job_detail.html", {"job": job})
+
+
+@login_required
+def serve_media(request, path):
+    """Serve the media files only to authenticated users
+
+    Args:
+        request: the HTTP request
+        path (str): the path of the file relative to MEDIA_ROOT
+    """
+    return serve(request, path, document_root=settings.MEDIA_ROOT)
