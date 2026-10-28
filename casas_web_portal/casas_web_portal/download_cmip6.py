@@ -10,7 +10,8 @@ logger.setLevel(logging.DEBUG)
 
 BASE_URL = "https://ds.nccs.nasa.gov/thredds/fileServer/AMES/NEX/GDDP-CMIP6"
 
-MODELS = [("MPI-ESM1-2-HR", "historical"), ("MPI-ESM1-2-HR", "ssp585")]
+MODELS_HIST = [("MPI-ESM1-2-HR", "historical")]
+MODELS_SSP = [("MPI-ESM1-2-HR", "ssp585")]
 
 CMIP6_DIR = os.path.join(settings.DATA_DIR, "cmip6")
 if not os.path.exists(CMIP6_DIR):
@@ -62,16 +63,20 @@ def _all_data_download(
     years = range(dates[0].year, dates[1].year + 1)
     extract_to = os.path.join(output_dir, variable)
     os.makedirs(extract_to, exist_ok=True)
-    for model in MODELS:
-        key = model[0]
-        val = model[1]
-        for year in years:
+    for year in years:
+        if year <= 2014:
+            models = MODELS_HIST
+        else:
+            models = MODELS_SSP
+        for model in models:
+            key = model[0]
+            val = model[1]
             if version:
                 filename = f"{variable}_day_{key}_{val}_r1i1p1f1_gn_{year}_{version}.nc"
             else:
                 filename = f"{variable}_day_{key}_{val}_r1i1p1f1_gn_{year}.nc"
             file = os.path.join(extract_to, filename)
-            url = f"{BASE_URL}/{key}/{val}/r1i1p1f1/{variable}/{filename}"  # ?var=pr&north={coords[3]}&west={coords[0]}&east={coords[2]}&south={coords[1]}&horizStride=1&time_start={dates[0].strftime("%Y-%m-%d")}&time_end={dates[1].strftime("%Y-%m-%d")}&timeStride=&vertCoord=&accept={format}&addLatLon=true"
+            url = f"{BASE_URL}/{key}/{val}/r1i1p1f1/{variable}/{filename}"
             _download_process_data(url, file)
     return True
 
