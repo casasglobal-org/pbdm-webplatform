@@ -34,6 +34,14 @@
 	</head>
 
 	<body>
+		{% if user.is_authenticated %}
+		<div id="jobNotify" class="alert alert-success alert-dismissible fade show d-none mb-0 rounded-0" role="alert"
+			data-user-id="{{ user.id }}"
+			data-template="{% trans 'Job {name} has finished, click to see the results' %}">
+			<div id="jobNotifyList"></div>
+			<button type="button" class="btn-close" id="jobNotifyClose" aria-label="{% trans 'Close' %}"></button>
+		</div>
+		{% endif %}
 		<!-- Start Header/Navigation -->
 		<nav class="custom-navbar navbar navbar navbar-expand-md" arial-label="Furni navigation bar">
 
@@ -188,6 +196,9 @@
 		<script src="{% static 'webjs/jquery-3.7.1.min.js.js' %}" type="text/javascript"></script>
 		<script src="{% static 'webjs/tiny-slider.js' %}" type="text/javascript"></script>
 		<script src="{% static 'webjs/custom.js' %}" type="text/javascript"></script>
+		{% if user.is_authenticated %}
+		<script src="{% static 'webjs/jobs_notify.js' %}" type="text/javascript"></script>
+		{% endif %}
         {% block footerhead %}{% endblock %}
 	</body>
 
