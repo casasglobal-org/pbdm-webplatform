@@ -1,5 +1,6 @@
 import gzip
 import os
+import shutil
 import tempfile
 import zipfile
 
@@ -264,7 +265,9 @@ class Job(BaseDigi):
                 settings.TXT_DIR, self.weather, f"{self.model}_{self.id}_{x}_{y}"
             )
             unzip_file = os.path.join(rundir, txt_file)
-            os.makedirs(rundir, exist_ok=True)
+            # remove the outputs of a previous run of the same job
+            shutil.rmtree(rundir, ignore_errors=True)
+            os.makedirs(rundir)
             with gzip.open(gzip_file, "r") as f:
                 with open(unzip_file, "wb") as out:
                     out.write(f.read())

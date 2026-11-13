@@ -49,6 +49,15 @@
                 {% elif job.started and not job.ended %}
                 <p><strong>{% trans "Model Output:" %}</strong> {% trans "Processing..." %}</p>
                 {% endif %}
+                {% if job.user == request.user or request.user.is_superuser %}
+                {% if not job.started or job.ended %}
+                <form method="post" action="{% url 'job_rerun' job.id %}"
+                      onsubmit="return confirm('{% trans "Run the job again? The previous output will be overwritten." %}');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">{% trans "Run again" %}</button>
+                </form>
+                {% endif %}
+                {% endif %}
             </div>
             <div class="col-md-8">
                 <div id="map">

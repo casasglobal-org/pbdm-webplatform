@@ -1,8 +1,9 @@
 from django.conf import settings
-from django.shortcuts import render, redirect
-from django.http import HttpResponseNotAllowed, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render, redirect
+from django.http import HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseRedirect
 from django.db.models import Q
 from django.urls import reverse
+from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.views.static import serve
 from casas_web_portal.functions import write_inmemory_file
@@ -210,6 +211,30 @@ def job_detail(request, job_id):
     """
     job = Job.objects.get(id=job_id)
     return render(request, "job_detail.html", {"job": job})
+
+
+@login_required
+def job_rerun(request, job_id):
+    """Run again the model of a job, overriding the previous output
+
+    Args:
+        request: the HTTP request
+        job_id (int): The job id
+    """
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+    job = get_object_or_404(Job, id=job_id)
+    if job.user != request.user and not request.user.is_superuser:
+        return HttpResponseForbidden()
+    if job.started and not job.ended:
+        return redirect(f"/job/{job.id}")
+    if job.model_output:
+        job.model_output.delete(save=False)
+    job.started = timezone.now()
+    job.ended = None
+    job.save(update_fields=["model_output", "started", "ended"])
+    run_job(job.pk)
+    return redirect(f"/job/{job.id}")
 
 
 @login_required

@@ -8,6 +8,7 @@ from .views import (
     termofuse,
     map,
     job_detail,
+    job_rerun,
     process,
 )
 
@@ -20,4 +21,5 @@ urlpatterns = [
     path("process", process, name="process"),
     path("operation", operation, name="operation"),
     path("job/<int:job_id>", job_detail),
+    path("job/<int:job_id>/rerun", job_rerun, name="job_rerun"),
 ]
