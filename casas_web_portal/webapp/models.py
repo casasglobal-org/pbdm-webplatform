@@ -183,6 +183,65 @@ class Job(BaseDigi):
         output = f"{self.name} {self.model} {self.weather} - {self.start_date}/{self.end_date}"
         return smart_str(output)
 
+    @staticmethod
+    def _read_lines(path):
+        """Return the not empty lines of a file, all ending with a newline"""
+        if not os.path.exists(path):
+            return []
+        with open(path) as f:
+            return [line.rstrip("\n") + "\n" for line in f if line.strip()]
+
+    def _merge_outputs(self, rundirs):
+        """Merge the output files of every grid cell.
+
+        Each run writes one file per GIS output step (listed in
+        ``GisFilesList.txt``) containing a header and a single row for its
+        location. Files of the same step are merged into one file with the
+        header and one row for each location. The summaries files are merged
+        keeping the header only once, the error logs are merged adding the
+        run directory name in front of each message.
+
+        Returns:
+            dict: the merged file names mapped to their lines
+        """
+        merged = {}
+        names = {}
+        summaries = []
+        errors = []
+        for rundir in rundirs:
+            gisfiles = [
+                line.strip()
+                for line in self._read_lines(os.path.join(rundir, "GisFilesList.txt"))
+            ]
+            for gisfile in gisfiles:
+                lines = self._read_lines(os.path.join(rundir, gisfile))
+                if not lines:
+                    continue
+                # the step number is the last part of the name, the date
+                # part could change between runs
+                step = os.path.splitext(gisfile)[0].rsplit("_", 1)[-1]
+                if step not in names:
+                    names[step] = gisfile
+                    merged[gisfile] = [lines[0]]
+                merged[names[step]].extend(lines[1:])
+            lines = self._read_lines(
+                os.path.join(rundir, f"{self.model.capitalize()}Summaries.txt")
+            )
+            if lines:
+                if not summaries:
+                    summaries.append(lines[0])
+                summaries.extend(lines[1:])
+            cell = os.path.basename(rundir)
+            errors.extend(
+                f"{cell}\t{line}"
+                for line in self._read_lines(os.path.join(rundir, "errorlog"))
+            )
+        if summaries:
+            merged[f"{self.model.capitalize()}Summaries.txt"] = summaries
+        if errors:
+            merged["errorlog.txt"] = errors
+        return merged
+
     def run_model(self):
         """Run the PDMB model on every grid cell intersecting the job area.
 
@@ -226,19 +285,16 @@ class Job(BaseDigi):
             )
             os.remove(unzip_file)
             rundirs.append(rundir)
-        if rundirs:
+        merged = self._merge_outputs(rundirs)
+        if merged:
             archive_name = f"{self.id}.zip"
             with tempfile.TemporaryDirectory() as tmpdir:
                 archive_path = os.path.join(tmpdir, archive_name)
                 with zipfile.ZipFile(
                     archive_path, "w", zipfile.ZIP_DEFLATED
                 ) as archive:
-                    for rundir in rundirs:
-                        for fname in sorted(os.listdir(rundir)):
-                            archive.write(
-                                os.path.join(rundir, fname),
-                                arcname=os.path.join(os.path.basename(rundir), fname),
-                            )
+                    for fname, lines in merged.items():
+                        archive.writestr(fname, "".join(lines))
                 with open(archive_path, "rb") as archive:
                     self.model_output.save(archive_name, File(archive), save=True)
         self.ended = timezone.now()
